@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIT Tuition Centre – Student Enquiry</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0d1b4b;
+  --gold: #c9a84c;
+  --gold-light: #f5e6c3;
+  --cream: #fdf8ee;
+  --green: #1a6e3c;
+  --green-light: #e8f5ee;
+  --red: #c0392b;
+  --gray: #6c757d;
+  --border: #d4c9a8;
+  --shadow: 0 4px 24px rgba(13,27,75,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:linear-gradient(135deg,#e8eaf6 0%,#f5f0e8 60%,#e8f0e8 100%);min-height:100vh;padding:16px;}
+
+#page-form{display:block;}
+#page-preview{display:none;}
+
+.card{max-width:860px;margin:auto;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(13,27,75,0.13);overflow:hidden;border:1.5px solid var(--border);}
+
+.header{background:linear-gradient(135deg,var(--navy) 0%,#1a2d7c 100%);padding:20px 24px 16px;display:flex;align-items:flex-start;gap:16px;position:relative;}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold),#e8c96a,var(--gold));}
+.logo-box{flex:1;}
+.logo-box h1{font-family:'Playfair Display',serif;color:white;font-size:clamp(18px,4vw,26px);letter-spacing:1px;line-height:1.2;}
+.logo-box .tagline{color:var(--gold-light);font-size:clamp(10px,2.5vw,13px);margin-top:3px;font-weight:300;}
+.logo-box .address{color:rgba(255,255,255,0.75);font-size:clamp(9px,2vw,11px);margin-top:6px;line-height:1.5;}
+.clock-box{color:rgba(255,255,255,0.85);font-size:clamp(9px,2vw,11px);text-align:right;min-width:120px;}
+.clock-box #liveClock{display:block;font-weight:600;margin-top:4px;color:var(--gold-light);}
+
+.photo-panel{background:var(--cream);border-bottom:1.5px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:20px;}
+.photo-box{width:110px;height:130px;border:2.5px dashed var(--gold);border-radius:10px;overflow:hidden;flex-shrink:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fffbf3;transition:.2s;position:relative;}
+.photo-box:hover{border-color:var(--navy);background:#f0f3ff;}
+.photo-box img{width:100%;height:100%;object-fit:cover;display:none;}
+.photo-box .cam-label{font-size:11px;color:var(--gray);font-weight:600;margin-top:4px;text-align:center;}
+.photo-box .cam-icon{font-size:28px;}
+.photo-info{flex:1;}
+.photo-info p{font-size:12px;color:var(--gray);line-height:1.7;}
+.photo-info .photo-tip{background:var(--gold-light);border-left:3px solid var(--gold);padding:6px 10px;border-radius:4px;font-size:11px;color:#6b4e10;margin-top:6px;}
+
+.section-title{font-family:'Playfair Display',serif;font-size:14px;color:var(--navy);font-weight:700;padding:12px 24px 6px;background:var(--cream);border-bottom:1px solid var(--border);border-top:1.5px solid var(--border);display:flex;align-items:center;gap:8px;}
+.section-title span{display:inline-block;width:20px;height:20px;background:var(--navy);color:white;border-radius:50%;font-size:10px;text-align:center;line-height:20px;font-family:'DM Sans',sans-serif;}
+
+.form-body{padding:16px 24px;}
+.row{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.field{flex:1;min-width:0;}
+.field.sm{flex:0 0 120px;min-width:0;}
+.field.xs{flex:0 0 90px;min-width:0;}
+.field.full{flex:0 0 100%;width:100%;}
+label{display:block;font-size:11px;font-weight:600;color:var(--navy);margin-bottom:4px;letter-spacing:.3px;text-transform:uppercase;}
+input,select,textarea{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;color:#222;background:white;transition:.15s;outline:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(13,27,75,0.08);}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%230d1b4b'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+textarea{resize:vertical;min-height:56px;}
+.age-badge{display:inline-block;background:var(--navy);color:white;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;margin-left:6px;white-space:nowrap;}
+.dob-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.dob-row input{width:130px;flex:0 0 130px;}
+
+/* Subject checkbox grid */
+.subject-grid{background:var(--cream);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;min-height:44px;align-items:center;}
+.subject-check{display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 10px;border-radius:20px;border:1.5px solid var(--border);background:white;transition:.15s;font-size:12px;font-weight:600;color:#444;user-select:none;}
+.subject-check:hover{border-color:var(--navy);background:#f0f3ff;color:var(--navy);}
+.subject-check input[type=checkbox]{width:14px;height:14px;accent-color:var(--navy);cursor:pointer;margin:0;}
+.subject-check.checked{background:var(--navy);color:white;border-color:var(--navy);}
+.badge-placeholder{color:#bbb;font-size:12px;font-style:italic;}
+
+.id-wrap{position:relative;}
+.id-wrap input{font-family:monospace;font-weight:700;letter-spacing:1px;font-size:13px;}
+.id-history{position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--navy);border-radius:8px;z-index:100;max-height:180px;overflow-y:auto;box-shadow:var(--shadow);display:none;}
+.id-history-item{padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid #eee;transition:.1s;}
+.id-history-item:hover{background:var(--cream);}
+.id-history-item .id-num{font-weight:700;color:var(--navy);font-family:monospace;}
+.id-history-item .id-name{color:var(--gray);font-size:11px;}
+
+.office-section{background:linear-gradient(135deg,#f0f4ff,#e8f5ee);border:1.5px dashed #aac;border-radius:10px;margin:8px 0;padding:14px 16px;}
+.office-label{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.office-label::before,.office-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.fees-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;}
+.fees-table th{background:var(--navy);color:white;padding:7px 10px;text-align:left;font-size:11px;letter-spacing:.3px;}
+.fees-table td{padding:6px 10px;border-bottom:1px solid var(--border);}
+.fees-table td input{padding:5px 8px;font-size:12px;border-radius:5px;}
+.fees-table tr:nth-child(even) td{background:rgba(13,27,75,0.03);}
+.fees-display{font-weight:700;color:var(--green);}
+
+.generate-area{padding:16px 24px;background:var(--cream);border-top:1.5px solid var(--border);text-align:center;}
+.btn-generate{background:linear-gradient(135deg,var(--navy),#1a3a8f);color:white;border:none;padding:14px 48px;border-radius:10px;font-size:15px;font-weight:700;font-family:'Playfair Display',serif;letter-spacing:1px;cursor:pointer;transition:.2s;box-shadow:0 4px 16px rgba(13,27,75,0.25);}
+.btn-generate:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(13,27,75,0.35);}
+
+/* ===== PAGE 2: PREVIEW ===== */
+#page-preview{background:var(--cream);padding:16px;}
+.preview-actions{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;}
+.btn-action{padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-back{background:var(--gray);color:white;}
+.btn-print{background:var(--navy);color:white;}
+.btn-share{background:#25D366;color:white;}
+.btn-action:hover{opacity:.88;transform:translateY(-1px);}
+
+/* Two card layout */
+.cards-wrapper{max-width:900px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:700px){.cards-wrapper{grid-template-columns:1fr;}}
+
+/* Shared bio card */
+.bio-card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 6px 32px rgba(13,27,75,0.15);border:2px solid var(--navy);}
+.bio-card.paid-card{border-color:var(--green);}
+.bio-card.unpaid-card{border-color:var(--red);}
+
+.card-status-banner{padding:6px 16px;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;}
+.paid-banner{background:var(--green);color:white;}
+.unpaid-banner{background:var(--red);color:white;}
+
+.bio-header{background:linear-gradient(135deg,var(--navy) 0%,#1a2d7c 100%);padding:14px 18px;display:flex;gap:14px;align-items:center;position:relative;}
+.bio-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),#e8c96a,var(--gold));}
+.bio-photo{width:64px;height:76px;border-radius:7px;border:2px solid var(--gold);object-fit:cover;flex-shrink:0;background:#334;}
+.bio-photo-placeholder{width:64px;height:76px;border-radius:7px;border:2px solid var(--gold);background:#334;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:24px;flex-shrink:0;}
+.bio-title{color:white;}
+.bio-title h2{font-family:'Playfair Display',serif;font-size:17px;margin-bottom:2px;}
+.bio-title p{color:var(--gold-light);font-size:10px;}
+
+.bio-section{padding:10px 16px;border-bottom:1px solid var(--border);}
+.bio-section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:7px;}
+.bio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px 16px;}
+.bio-field label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);display:block;}
+.bio-field p{font-size:12px;font-weight:500;color:#1a1a2e;margin-top:1px;}
+.bio-field p.highlight{font-size:14px;font-weight:700;color:var(--navy);}
+.bio-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;}
+.badge{background:var(--navy);color:white;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;}
+
+.bio-fee-section{padding:10px 16px;border-bottom:1px solid var(--border);}
+.bio-fee-section .bio-section-title{margin-bottom:7px;}
+.fee-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px dashed #e8e3d5;}
+.fee-row:last-child{border:none;font-weight:700;font-size:12px;color:var(--navy);padding-top:6px;}
+.fee-row span:last-child{font-weight:600;}
+
+.bio-stamp-row{padding:8px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;background:var(--cream);}
+.bio-stamp{display:inline-block;font-size:10px;font-weight:800;padding:4px 12px;border-radius:4px;letter-spacing:1.5px;text-transform:uppercase;}
+.stamp-paid{border:2px solid var(--green);color:var(--green);}
+.stamp-unpaid{border:2px solid var(--red);color:var(--red);}
+.stamp-enquiry{border:2px solid var(--gold);color:#8a5c00;}
+
+.bio-footer{text-align:center;font-size:9px;color:var(--gray);padding:8px;background:var(--cream);border-top:1px solid var(--border);}
+
+.sig-row{display:flex;justify-content:space-between;margin-top:14px;gap:14px;padding:0 16px 12px;}
+.sig-box{flex:1;text-align:center;font-size:9px;color:var(--gray);}
+.sig-line{border-top:1px solid #999;margin-bottom:4px;margin-top:20px;}
+
+/* Medium radio toggle */
+.medium-toggle{display:flex;gap:0;border:1.5px solid var(--border);border-radius:7px;overflow:hidden;}
+.medium-toggle label{flex:1;text-align:center;padding:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--gray);background:white;border:none;letter-spacing:.3px;text-transform:none;transition:.15s;margin:0;}
+.medium-toggle input[type=radio]{display:none;}
+.medium-toggle input[type=radio]:checked+label{background:var(--navy);color:white;}
+.medium-toggle label:hover{background:var(--cream);}
+
+@media(max-width:600px){
+  .row{flex-direction:column;}
+  .field.sm,.field.xs{flex:0 0 100%;}
+  .header{flex-direction:column;gap:10px;}
+  .clock-box{text-align:left;}
+  .photo-panel{flex-direction:column;align-items:center;text-align:center;}
+  .bio-grid{grid-template-columns:1fr;}
+  .sig-row{flex-direction:column;}
+  .preview-actions{flex-direction:column;align-items:center;}
+}
+@media print{
+  body{background:white;padding:0;}
+  #page-preview{background:white;padding:0;}
+  .preview-actions{display:none!important;}
+  .cards-wrapper{gap:12px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== PAGE 1: ENQUIRY FORM ===== -->
+<div id="page-form">
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-box">
+      <h1>MIT Tuition Centre</h1>
+      <div class="tagline">Excellence in Education · Shaping Tomorrow's Leaders</div>
+      <div class="address">📍 Pudukkottai Main Road, MIET Gundur, Trichy – 620 007</div>
+    </div>
+    <div class="clock-box">
+      <span style="font-size:10px;opacity:.7;">Live Date &amp; Time</span>
+      <span id="liveClock"></span>
+    </div>
+  </div>
+
+  <!-- Photo -->
+  <div class="photo-panel">
+    <div class="photo-box" id="photoBox" onclick="startCamera()">
+      <div class="cam-icon">📷</div>
+      <div class="cam-label">Tap to Capture<br>Live Photo</div>
+      <img id="photoPreview">
+    </div>
+    <video id="camVideo" style="display:none;width:110px;height:130px;border-radius:10px;object-fit:cover;"></video>
+    <canvas id="camCanvas" style="display:none;"></canvas>
+    <input type="file" id="fileInput" accept="image/*" hidden onchange="handleFile(this)">
+    <div class="photo-info">
+      <p><strong>Student Photograph</strong><br>A clear, front-facing photo is required for the student ID card and records.</p>
+      <div class="photo-tip">📌 Click the box to launch your camera. Ensure good lighting and a plain background for clarity.</div>
+    </div>
+  </div>
+
+  <!-- Section 1: Identity -->
+  <div class="section-title"><span>1</span> Student Identity</div>
+  <div class="form-body">
+    <div class="row">
+      <div class="field xs">
+        <label>Student ID</label>
+        <div class="id-wrap">
+          <input type="text" id="studentId" placeholder="MIT-2026-001" oninput="checkIdHistory(this.value)" onblur="hideHistory()" autocomplete="off">
+          <div class="id-history" id="idHistory"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Student Full Name</label>
+        <input type="text" id="studentName" placeholder="Enter full name as per records" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Date of Birth</label>
+        <div class="dob-row">
+          <input type="date" id="dobInput" onchange="calcAge()" style="width:140px;flex:0 0 140px;">
+          <span id="ageBadge" class="age-badge" style="display:none;"></span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Gender</label>
+        <select id="genderField">
+          <option value="">-- Select --</option>
+          <option>Male</option><option>Female</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Blood Group</label>
+        <select id="bloodGroup">
+          <option value="">--</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Medium + Standard + Group -->
+    <div class="row">
+      <div class="field sm">
+        <label>Medium</label>
+        <div class="medium-toggle">
+          <input type="radio" name="medium" id="medTamil" value="Tamil" checked>
+          <label for="medTamil">Tamil</label>
+          <input type="radio" name="medium" id="medEnglish" value="English">
+          <label for="medEnglish">English</label>
+        </div>
+      </div>
+      <div class="field sm">
+        <label>Standard</label>
+        <select id="classPicker" onchange="updateUI()">
+          <option value="">--</option>
+          <option>LKG</option><option>UKG</option>
+          <script>for(let i=1;i<=12;i++)document.write(`<option>${i}</option>`);</script>
+        </select>
+      </div>
+      <div class="field sm" id="groupWrapper" style="display:none;">
+        <label>Group</label>
+        <select id="groupPicker" onchange="updateUI()">
+          <option value="">--</option>
+          <option value="1">Group 1 – Bio/Maths</option>
+          <option value="2">Group 2 – CS/Maths</option>
+          <option value="3">Group 3 – Commerce</option>
+          <option value="4">Group 4 – Vocational</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Subject Selection -->
+    <div class="row">
+      <div class="field full">
+        <label>Select Subjects</label>
+        <div class="subject-grid" id="subjectGrid">
+          <span class="badge-placeholder">Select standard to see subjects...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>School / Previous Institution</label>
+        <input type="text" id="schoolName" placeholder="Name of school attending">
+      </div>
+      <div class="field sm">
+        <label>Academic Year</label>
+        <input type="text" id="acadYear" placeholder="2025-26" value="2025-26">
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Parent Details -->
+  <div class="section-title"><span>2</span> Parent / Guardian Details</div>
+  <div class="form-body">
+    <div class="row">
+      <div class="field"><label>Father's Name</label><input type="text" id="fatherName"></div>
+      <div class="field"><label>Father's Contact</label><input type="tel" id="fatherPhone" placeholder="10-digit mobile"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Mother's Name</label><input type="text" id="motherName"></div>
+      <div class="field"><label>Mother's Contact</label><input type="tel" id="motherPhone" placeholder="10-digit mobile"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Occupation</label><input type="text" id="parentOccupation" placeholder="Father's / Guardian's occupation"></div>
+      <div class="field"><label>Annual Income</label>
+        <select id="income">
+          <option value="">--</option>
+          <option>Below ₹1 Lakh</option><option>₹1–3 Lakh</option><option>₹3–5 Lakh</option><option>Above ₹5 Lakh</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field full"><label>Residential Address</label><textarea id="address" rows="2" placeholder="Door No, Street, Area, City – PIN"></textarea></div>
+    </div>
+  </div>
+
+  <!-- Office Use Only -->
+  <div class="section-title"><span>★</span> For Office Use Only</div>
+  <div class="form-body">
+    <div class="office-section">
+      <div class="office-label">Fee Structure</div>
+      <table class="fees-table">
+        <thead><tr><th>Description</th><th>Amount (₹)</th></tr></thead>
+        <tbody>
+          <tr><td>Tuition Fee (Monthly)</td><td><input type="number" id="fee1" placeholder="0" oninput="calcTotal()"></td></tr>
+          <tr><td>Admission / Registration Fee</td><td><input type="number" id="fee2" placeholder="0" oninput="calcTotal()"></td></tr>
+        </tbody>
+        <tfoot>
+          <tr><td style="font-weight:700;color:var(--navy);">Total Amount</td><td><span class="fees-display" id="feesTotal">₹ 0</span></td></tr>
+        </tfoot>
+      </table>
+      <div class="row" style="margin-top:12px;">
+        <div class="field"><label>Reference</label>
+          <select id="reference"><option value="">--</option><option>Friend / Relative</option><option>Social Media</option><option>Banner / Pamphlet</option><option>Walk-in</option><option>Other</option></select>
+        </div>
+        <div class="field"><label>Enquiry Date</label><input type="date" id="enquiryDate"></div>
+        <div class="field"><label>Remarks</label><input type="text" id="remarks" placeholder="Notes"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Payment Mode</label>
+          <select id="payMode"><option value="">--</option><option>Cash</option><option>UPI / GPay</option><option>Bank Transfer</option><option>Cheque</option></select>
+        </div>
+        <div class="field"><label>Enrolled By (Staff)</label><input type="text" id="staffName" placeholder="Staff name"></div>
+        <div class="field"><label>Status</label>
+          <select id="enrollStatus">
+            <option value="">--</option>
+            <option value="Paid">Paid</option>
+            <option value="Unpaid">Unpaid</option>
+            <option value="Enquiry">Enquiry</option>
+            <option value="Pending Docs">Pending Docs</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <div class="generate-area">
+    <button class="btn-generate" onclick="generatePreview()">⚡ GENERATE STUDENT BIO-DATA</button>
+    <div style="font-size:11px;color:var(--gray);margin-top:8px;">Review all details before generating. The bio-data card will reflect the selected payment status.</div>
+  </div>
+
+</div>
+</div>
+
+<!-- ===== PAGE 2: PREVIEW (Two Cards) ===== -->
+<div id="page-preview">
+  <div class="preview-actions">
+    <button class="btn-action btn-back" onclick="goBack()">← Back to Form</button>
+    <button class="btn-action btn-print" onclick="window.print()">🖨️ Print</button>
+    <button class="btn-action btn-share" onclick="shareWhatsApp()">📲 Share on WhatsApp</button>
+  </div>
+  <div class="cards-wrapper" id="cardsWrapper">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<script>
+const STORE_KEY = 'mit_students';
+function loadStudents(){ try{return JSON.parse(localStorage.getItem(STORE_KEY)||'[]');}catch{return[];} }
+function saveStudent(data){
+  let arr=loadStudents();
+  const idx=arr.findIndex(s=>s.id===data.id);
+  if(idx>=0) arr[idx]=data; else arr.push(data);
+  localStorage.setItem(STORE_KEY,JSON.stringify(arr));
+}
+
+// Clock
+function updateClock(){
+  const now=new Date();
+  document.getElementById('liveClock').innerText=now.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'medium'});
+}
+setInterval(updateClock,1000); updateClock();
+
+// Auto ID
+function genId(){
+  const students=loadStudents();
+  return 'MIT-'+new Date().getFullYear()+'-'+String(students.length+1).padStart(3,'0');
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('studentId').value=genId();
+  document.getElementById('enquiryDate').value=new Date().toISOString().split('T')[0];
+});
+
+// ID History
+function checkIdHistory(val){
+  const hist=document.getElementById('idHistory');
+  if(!val||val.length<3){hist.style.display='none';return;}
+  const students=loadStudents().filter(s=>s.id.toLowerCase().includes(val.toLowerCase())||s.name.toLowerCase().includes(val.toLowerCase()));
+  if(!students.length){hist.style.display='none';return;}
+  hist.innerHTML=students.map(s=>`<div class="id-history-item" onmousedown="fillFromHistory('${s.id}')"><span class="id-num">${s.id}</span> <span class="id-name">– ${s.name} | Std ${s.std}</span></div>`).join('');
+  hist.style.display='block';
+}
+function hideHistory(){setTimeout(()=>document.getElementById('idHistory').style.display='none',200);}
+function fillFromHistory(id){
+  const s=loadStudents().find(x=>x.id===id);
+  if(!s)return;
+  document.getElementById('studentId').value=s.id;
+  document.getElementById('studentName').value=s.name||'';
+  document.getElementById('dobInput').value=s.dob||'';
+  document.getElementById('genderField').value=s.gender||'';
+  document.getElementById('bloodGroup').value=s.blood||'';
+  document.getElementById('classPicker').value=s.std||'';
+  document.getElementById('fatherName').value=s.father||'';
+  document.getElementById('fatherPhone').value=s.fPhone||'';
+  document.getElementById('motherName').value=s.mother||'';
+  document.getElementById('motherPhone').value=s.mPhone||'';
+  document.getElementById('address').value=s.address||'';
+  document.getElementById('schoolName').value=s.school||'';
+  calcAge(); updateUI();
+}
+
+// Camera
+let camStream=null,camActive=false;
+async function startCamera(){
+  if(camActive){capturePhoto();return;}
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:760}});
+    const vid=document.getElementById('camVideo');
+    vid.srcObject=camStream; vid.style.display='block'; vid.play();
+    document.getElementById('photoBox').onclick=capturePhoto;
+    document.querySelector('.cam-label').innerText='Tap to Capture';
+    document.querySelector('.cam-icon').innerText='📸';
+    camActive=true;
+  }catch(e){document.getElementById('fileInput').click();}
+}
+function capturePhoto(){
+  if(!camActive)return;
+  const vid=document.getElementById('camVideo');
+  const canvas=document.getElementById('camCanvas');
+  canvas.width=vid.videoWidth; canvas.height=vid.videoHeight;
+  canvas.getContext('2d').drawImage(vid,0,0);
+  const dataUrl=canvas.toDataURL('image/jpeg',0.95);
+  showPhoto(dataUrl);
+  if(camStream){camStream.getTracks().forEach(t=>t.stop()); camStream=null;}
+  vid.style.display='none'; camActive=false;
+  document.getElementById('photoBox').onclick=startCamera;
+}
+function handleFile(input){
+  if(!input.files||!input.files[0])return;
+  const r=new FileReader(); r.onload=e=>showPhoto(e.target.result); r.readAsDataURL(input.files[0]);
+}
+function showPhoto(src){
+  const img=document.getElementById('photoPreview');
+  img.src=src; img.style.display='block';
+  document.querySelector('.cam-icon').style.display='none';
+  document.querySelector('.cam-label').style.display='none';
+}
+function getPhotoSrc(){return document.getElementById('photoPreview').src||'';}
+
+// Age
+function calcAge(){
+  const dob=new Date(document.getElementById('dobInput').value);
+  if(!dob||isNaN(dob))return;
+  const today=new Date();
+  let age=today.getFullYear()-dob.getFullYear();
+  if(today<new Date(today.getFullYear(),dob.getMonth(),dob.getDate()))age--;
+  const badge=document.getElementById('ageBadge');
+  badge.innerText='Age: '+age+' yrs'; badge.style.display='inline-block';
+}
+
+// Subject map - returns list of subjects based on class, group, medium
+function getSubjectList(cls, grpVal, medium){
+  if(cls==='11'||cls==='12'){
+    const map={
+      '1':['Physics','Chemistry','Biology','Mathematics'],
+      '2':['Physics','Chemistry','Computer Science','Mathematics'],
+      '3':['Commerce','Accountancy','Economics','Business Maths'],
+      '4':['Nursing','Nutrition','Agriculture','Ethics']
+    };
+    let subs = map[grpVal]||[];
+    if(subs.length) {
+      // Add language subjects based on medium
+      if(medium==='Tamil') return ['Tamil','English',...subs];
+      else return ['Tamil','English',...subs];
+    }
+    return [];
+  } else if(['LKG','UKG'].includes(cls)){
+    return ['Phonics','Number Work','Storytelling','Colouring'];
+  } else if(parseInt(cls)>=1&&parseInt(cls)<=5){
+    if(medium==='Tamil') return ['Tamil','English','Mathematics','Environmental Science'];
+    else return ['Tamil','English','Mathematics','Environmental Science'];
+  } else if(parseInt(cls)>=6&&parseInt(cls)<=10){
+    return ['Tamil','English','Mathematics','Science','Social Science'];
+  }
+  return [];
+}
+
+function updateUI(){
+  const cls=document.getElementById('classPicker').value;
+  const grpWrap=document.getElementById('groupWrapper');
+  const grpVal=document.getElementById('groupPicker').value;
+  const medium=document.querySelector('input[name=medium]:checked')?.value||'Tamil';
+  const grid=document.getElementById('subjectGrid');
+  grid.innerHTML='';
+  grpWrap.style.display=(cls==='11'||cls==='12')?'block':'none';
+
+  const subs = getSubjectList(cls, grpVal, medium);
+  if(!subs.length){
+    grid.innerHTML='<span class="badge-placeholder">'+(cls===''?'Select standard first...':((cls==='11'||cls==='12')&&!grpVal?'Select group...':'No subjects available'))+'</span>';
+    return;
+  }
+  subs.forEach(s=>{
+    const lbl=document.createElement('label');
+    lbl.className='subject-check';
+    lbl.innerHTML=`<input type="checkbox" value="${s}" checked onchange="toggleCheck(this)">${s}`;
+    lbl.querySelector('input').addEventListener('change',function(){
+      lbl.classList.toggle('checked',this.checked);
+    });
+    lbl.classList.add('checked');
+    grid.appendChild(lbl);
+  });
+}
+
+function toggleCheck(cb){
+  cb.closest('label').classList.toggle('checked',cb.checked);
+}
+
+// Medium change → refresh subjects
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('input[name=medium]').forEach(r=>r.addEventListener('change',updateUI));
+});
+
+function getSelectedSubjects(){
+  return Array.from(document.querySelectorAll('#subjectGrid input[type=checkbox]:checked')).map(c=>c.value);
+}
+
+// Fees
+function calcTotal(){
+  const ids=['fee1','fee2'];
+  const total=ids.reduce((sum,id)=>sum+(parseFloat(document.getElementById(id).value)||0),0);
+  document.getElementById('feesTotal').innerText='₹ '+total.toLocaleString('en-IN');
+}
+
+// Build a single bio card HTML
+function buildCard(data, isPaid){
+  const badges = data.subjects||[];
+  const badgeHtml = badges.length ? badges.map(s=>`<span class="badge">${s}</span>`).join('') : '<span style="color:#999">–</span>';
+  const photoHtml = data.photo ? `<img src="${data.photo}" class="bio-photo" alt="Photo">` : `<div class="bio-photo-placeholder">👤</div>`;
+  const stdLabel = data.std ? (data.std==='LKG'||data.std==='UKG' ? data.std : 'Class '+data.std) : '–';
+  const groupMap={'1':'Group 1 – Bio/Maths','2':'Group 2 – CS/Maths','3':'Group 3 – Commerce','4':'Group 4 – Vocational'};
+  const dobFormatted = data.dob ? new Date(data.dob).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '–';
+  const total = (parseFloat(data.fees.tuition)||0)+(parseFloat(data.fees.admission)||0);
+
+  const statusClass = isPaid ? 'paid-card' : 'unpaid-card';
+  const bannerClass = isPaid ? 'paid-banner' : 'unpaid-banner';
+  const bannerIcon = isPaid ? '✅' : '⚠️';
+  const bannerText = isPaid ? 'PAID' : 'UNPAID';
+  const stampClass = isPaid ? 'stamp-paid' : 'stamp-unpaid';
+
+  return `
+  <div class="bio-card ${statusClass}">
+    <div class="card-status-banner ${bannerClass}">${bannerIcon} ${bannerText}</div>
+    <div class="bio-header">
+      ${photoHtml}
+      <div class="bio-title">
+        <h2>MIT Tuition Centre</h2>
+        <p>Pudukkottai Main Road, MIET Gundur, Trichy – 620 007</p>
+        <p style="margin-top:6px;font-size:11px;color:var(--gold-light);font-weight:700;">STUDENT ENQUIRY BIO-DATA</p>
+      </div>
+    </div>
+
+    <div class="bio-section">
+      <div class="bio-section-title">Student Identity</div>
+      <div class="bio-grid">
+        <div class="bio-field"><label>Student ID</label><p class="highlight">${data.id||'–'}</p></div>
+        <div class="bio-field"><label>Academic Year</label><p>${data.acadYear||'–'}</p></div>
+        <div class="bio-field"><label>Full Name</label><p class="highlight">${data.name}</p></div>
+        <div class="bio-field"><label>Gender</label><p>${data.gender||'–'}</p></div>
+        <div class="bio-field"><label>Date of Birth</label><p>${dobFormatted}</p></div>
+        <div class="bio-field"><label>Age</label><p>${data.age||'–'}</p></div>
+        <div class="bio-field"><label>Blood Group</label><p>${data.blood||'–'}</p></div>
+        <div class="bio-field"><label>Medium</label><p>${data.medium||'–'}</p></div>
+        <div class="bio-field"><label>Standard / Class</label><p class="highlight">${stdLabel}</p></div>
+        <div class="bio-field"><label>Group</label><p>${groupMap[data.group]||'–'}</p></div>
+        <div class="bio-field" style="grid-column:span 2"><label>Subjects</label><div class="bio-badges">${badgeHtml}</div></div>
+        <div class="bio-field" style="grid-column:span 2"><label>School / Institution</label><p>${data.school||'–'}</p></div>
+      </div>
+    </div>
+
+    <div class="bio-section">
+      <div class="bio-section-title">Parent / Guardian Details</div>
+      <div class="bio-grid">
+        <div class="bio-field"><label>Father's Name</label><p>${data.father||'–'}</p></div>
+        <div class="bio-field"><label>Father's Contact</label><p>${data.fPhone||'–'}</p></div>
+        <div class="bio-field"><label>Mother's Name</label><p>${data.mother||'–'}</p></div>
+        <div class="bio-field"><label>Mother's Contact</label><p>${data.mPhone||'–'}</p></div>
+        <div class="bio-field" style="grid-column:span 2"><label>Address</label><p>${data.address||'–'}</p></div>
+      </div>
+    </div>
+
+    <div class="bio-fee-section">
+      <div class="bio-section-title">Fee Details</div>
+      <div class="fee-row"><span>Tuition Fee (Monthly)</span><span>₹ ${(parseFloat(data.fees.tuition)||0).toLocaleString('en-IN')}</span></div>
+      <div class="fee-row"><span>Admission / Registration Fee</span><span>₹ ${(parseFloat(data.fees.admission)||0).toLocaleString('en-IN')}</span></div>
+      <div class="fee-row"><span><strong>Total Amount</strong></span><span><strong>₹ ${total.toLocaleString('en-IN')}</strong></span></div>
+    </div>
+
+    <div class="bio-stamp-row">
+      <span><strong>Mode:</strong> ${data.payMode||'–'}</span>
+      <span><strong>Staff:</strong> ${data.staff||'–'}</span>
+      <span class="bio-stamp ${stampClass}">${isPaid?'PAID':'UNPAID'}</span>
+    </div>
+
+    <div class="sig-row">
+      <div class="sig-box"><div class="sig-line"></div>Parent Signature</div>
+      <div class="sig-box"><div class="sig-line"></div>Student Signature</div>
+      <div class="sig-box"><div class="sig-line"></div>Staff / Admin</div>
+    </div>
+
+    <div class="bio-footer">
+      MIT Tuition Centre · Trichy &nbsp;|&nbsp; ${new Date().toLocaleDateString('en-IN',{dateStyle:'long'})} &nbsp;|&nbsp; <strong>${data.id}</strong>
+    </div>
+  </div>`;
+}
+
+// Generate Preview
+function generatePreview(){
+  const name=document.getElementById('studentName').value;
+  if(!name){alert('Please enter Student Name before generating.');return;}
+
+  const medium = document.querySelector('input[name=medium]:checked')?.value||'Tamil';
+  const subjects = getSelectedSubjects();
+
+  const data={
+    id:document.getElementById('studentId').value,
+    name,
+    dob:document.getElementById('dobInput').value,
+    gender:document.getElementById('genderField').value,
+    blood:document.getElementById('bloodGroup').value,
+    std:document.getElementById('classPicker').value,
+    group:document.getElementById('groupPicker').value,
+    school:document.getElementById('schoolName').value,
+    father:document.getElementById('fatherName').value,
+    fPhone:document.getElementById('fatherPhone').value,
+    mother:document.getElementById('motherName').value,
+    mPhone:document.getElementById('motherPhone').value,
+    address:document.getElementById('address').value,
+    medium,
+    subjects,
+    income:document.getElementById('income').value,
+    occupation:document.getElementById('parentOccupation').value,
+    remarks:document.getElementById('remarks').value,
+    reference:document.getElementById('reference').value,
+    enquiryDate:document.getElementById('enquiryDate').value,
+    acadYear:document.getElementById('acadYear').value,
+    payMode:document.getElementById('payMode').value,
+    staff:document.getElementById('staffName').value,
+    status:document.getElementById('enrollStatus').value,
+    age:document.getElementById('ageBadge').innerText,
+    fees:{
+      tuition:document.getElementById('fee1').value,
+      admission:document.getElementById('fee2').value,
+    },
+    photo:getPhotoSrc()
+  };
+  saveStudent(data);
+
+  // Determine paid/unpaid
+  const status = data.status||'';
+  const isPaid = status==='Paid';
+  const isUnpaid = status==='Unpaid' || status==='' || (status!=='Paid');
+
+  const wrapper = document.getElementById('cardsWrapper');
+
+  // Render ONLY the card that matches the actual payment status
+  if(isPaid){
+    wrapper.innerHTML = buildCard(data, true);
+    wrapper.style.gridTemplateColumns = '1fr';
+    wrapper.style.maxWidth = '480px';
+    wrapper.style.margin = 'auto';
+  } else {
+    wrapper.innerHTML = buildCard(data, false);
+    wrapper.style.gridTemplateColumns = '1fr';
+    wrapper.style.maxWidth = '480px';
+    wrapper.style.margin = 'auto';
+  }
+
+  // Status note
+  let note='';
+  if(status==='Paid') note=`<div style="text-align:center;font-size:13px;color:var(--green);font-weight:700;margin-bottom:12px;">✅ Payment Status: PAID — Bio-data generated successfully</div>`;
+  else if(status==='Unpaid') note=`<div style="text-align:center;font-size:13px;color:var(--red);font-weight:700;margin-bottom:12px;">⚠️ Payment Status: UNPAID — Bio-data generated</div>`;
+  else if(status) note=`<div style="text-align:center;font-size:13px;color:var(--gray);font-weight:600;margin-bottom:12px;">Status: ${status}</div>`;
+
+  document.getElementById('page-form').style.display='none';
+  document.getElementById('page-preview').style.display='block';
+
+  // Insert note before cards wrapper
+  let noteEl = document.getElementById('statusNote');
+  if(!noteEl){noteEl=document.createElement('div');noteEl.id='statusNote';wrapper.parentNode.insertBefore(noteEl,wrapper);}
+  noteEl.innerHTML=note;
+
+  window.scrollTo(0,0);
+}
+
+function goBack(){
+  document.getElementById('page-preview').style.display='none';
+  document.getElementById('page-form').style.display='block';
+}
+
+// WhatsApp
+async function shareWhatsApp(){
+  try{
+    if(typeof html2canvas!=='undefined'){
+      const card=document.getElementById('cardsWrapper');
+      const canvas=await html2canvas(card,{scale:2,useCORS:true,backgroundColor:'#ffffff'});
+      canvas.toBlob(async blob=>{
+        if(navigator.share&&navigator.canShare&&navigator.canShare({files:[new File([blob],'student-biodata.png',{type:'image/png'})]})){
+          await navigator.share({files:[new File([blob],'student-biodata.png',{type:'image/png'})],title:'MIT Tuition – Student Bio-Data'});
+        }else{
+          const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='student-biodata.png'; a.click();
+          setTimeout(()=>window.open('https://wa.me/','_blank'),800);
+        }
+      },'image/png');
+    }else{
+      const name=document.getElementById('studentName').value||'Student';
+      const id=document.getElementById('studentId').value||'';
+      const std=document.getElementById('classPicker').value||'';
+      const text=`*MIT Tuition Centre – Student Enquiry*\n\n*ID:* ${id}\n*Name:* ${name}\n*Standard:* ${std}\n\n_Trichy – 620007_`;
+      window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+    }
+  }catch(e){window.open('https://wa.me/','_blank');}
+}
+
+(function(){
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>
