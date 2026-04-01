@@ -1,0 +1,2863 @@
+<html><head>
+<title>Sri Academy — Education Management System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #eef1f5;
+}
+
+/* ─── LOGIN OVERLAY ──────────────────────────── */
+#loginOverlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1e293b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.login-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  padding: 44px 40px 36px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  animation: loginPop 0.4s cubic-bezier(0.34,1.3,0.64,1);
+}
+@keyframes loginPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-10px); }
+  40%      { transform: translateX(10px); }
+  60%      { transform: translateX(-8px); }
+  80%      { transform: translateX(8px); }
+}
+.login-icon { font-size: 52px; margin-bottom: 8px; }
+.login-card h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  color: #1e293b;
+  font-weight: 800;
+}
+.login-card p {
+  margin: 0 0 28px;
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.login-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.login-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+.login-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #f8fafc;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  height: auto;
+  margin: 0;
+}
+.login-field input:focus {
+  outline: none;
+  border-color: #2563eb;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+.login-btn {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+  letter-spacing: 0.3px;
+}
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+}
+.login-btn:active { transform: translateY(0); }
+.login-error {
+  color: #dc2626;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-top: 12px;
+  min-height: 18px;
+  display: none;
+}
+.login-footer {
+  margin-top: 24px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+.show-pw-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 6px;
+}
+.show-pw-row input[type="checkbox"] {
+  width: 15px; height: 15px;
+  margin: 0; padding: 0;
+  border: none; background: none;
+  cursor: pointer;
+}
+.show-pw-row label {
+  font-size: 12px;
+  color: #64748b;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ─── LOGOUT BUTTON in header ──────────────── */
+.btn-logout {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+.btn-logout:hover { background: rgba(220,38,38,0.7); border-color: transparent; }
+
+/* ─── SIDEBAR ─────────────────────────────────── */
+.sidebar {
+  width: 230px;
+  height: 100vh;
+  background: #1e293b;
+  color: white;
+  position: fixed;
+  top: 0; left: 0;
+  padding-top: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+.sidebar-brand {
+  padding: 22px 16px 14px;
+  border-bottom: 1px solid #334155;
+  text-align: center;
+}
+.sidebar-brand .brand-icon { font-size: 32px; }
+.sidebar-brand h2 {
+  margin: 6px 0 2px;
+  font-size: 16px;
+  color: #f1f5f9;
+  letter-spacing: 0.5px;
+}
+.sidebar-brand small {
+  font-size: 10px;
+  color: #94a3b8;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.sidebar nav { padding: 10px 0; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  color: #cbd5e1;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13.5px;
+  transition: all 0.18s;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: #334155; color: #fff; }
+.nav-item.active {
+  background: #1d4ed8;
+  color: #fff;
+  border-left-color: #60a5fa;
+  font-weight: bold;
+}
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.sidebar-footer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 12px 16px;
+  border-top: 1px solid #334155;
+  font-size: 11px;
+  color: #64748b;
+  text-align: center;
+}
+
+/* ─── MAIN ────────────────────────────────────── */
+.main { margin-left: 230px; padding: 20px; min-height: 100vh; }
+
+/* ─── HEADER ─────────────────────────────────── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #1e293b 0%, #1d4ed8 100%);
+  padding: 16px 24px;
+  border-radius: 10px;
+  margin-bottom: 22px;
+  box-shadow: 0 4px 15px rgba(29,78,216,0.25);
+}
+.header h2 { margin: 0; color: #fff; font-size: 20px; letter-spacing: 0.5px; }
+.header-clock { text-align: right; }
+.header-date { font-size: 13px; color: #bfdbfe; font-weight: bold; }
+.header-time { font-size: 18px; color: #fff; font-weight: bold; margin-top: 2px; letter-spacing: 1px; }
+
+/* ─── IO PANEL ───────────────────────────────── */
+.io-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.io-panel h4 { margin: 0; color: #1e293b; font-size: 14px; min-width: 120px; }
+.io-label {
+  background: #f1f5f9;
+  border: 2px dashed #94a3b8;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #475569;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.io-label:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+#excelFileInput { display: none; }
+.btn-export {
+  background: #16a34a; color: white; border: none;
+  padding: 9px 18px; cursor: pointer; border-radius: 6px;
+  font-size: 13px; font-weight: bold;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-export:hover { background: #15803d; }
+.btn-eod {
+  background: #7c3aed; color: white; border: none;
+  padding: 9px 18px; cursor: pointer; border-radius: 6px;
+  font-size: 13px; font-weight: bold;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-eod:hover { background: #6d28d9; }
+.import-status { font-size: 12px; color: #16a34a; font-weight: bold; display: none; }
+
+/* ─── STAT CARDS ─────────────────────────────── */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.card {
+  background: white;
+  padding: 20px 16px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-top: 4px solid #2563eb;
+  position: relative;
+  overflow: hidden;
+}
+.card::after {
+  content: attr(data-icon);
+  position: absolute;
+  bottom: -8px; right: 8px;
+  font-size: 44px;
+  opacity: 0.07;
+}
+.card h3 { font-size: 30px; margin: 0 0 4px; color: #1e293b; font-weight: 800; }
+.card p   { margin: 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.card:nth-child(1) { border-top-color: #2563eb; }
+.card:nth-child(2) { border-top-color: #16a34a; }
+.card:nth-child(3) { border-top-color: #f59e0b; }
+.card:nth-child(4) { border-top-color: #7c3aed; }
+
+/* ─── SECTION WRAPPER ────────────────────────── */
+.section-box {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.section-box h3 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+/* ─── FORM ROWS ──────────────────────────────── */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 8px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.form-group label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+input, select {
+  padding: 9px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  height: 38px;
+  background: #f9fafb;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: #2563eb;
+  background: #fff;
+}
+
+/* ─── AUTO TOTAL BAR ─────────────────────────── */
+.auto-total-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 12px 18px;
+  margin-top: 14px;
+}
+.at-item { display: flex; flex-direction: column; align-items: center; min-width: 100px; }
+.at-item span:first-child {
+  font-size: 10px; font-weight: bold; color: #64748b;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;
+}
+.at-item .at-val { font-size: 18px; font-weight: 800; color: #1e293b; }
+.at-item .at-val.green { color: #16a34a; }
+.at-item .at-val.blue  { color: #2563eb; }
+.at-item .at-val.amber { color: #d97706; }
+.at-item .at-val.red   { color: #dc2626; }
+.at-divider { width: 1px; height: 36px; background: #d1d5db; }
+
+/* ─── BUTTONS ────────────────────────────────── */
+.btn-save {
+  background: #2563eb; color: white; border: none;
+  padding: 9px 20px; cursor: pointer; border-radius: 6px;
+  font-size: 13px; font-weight: bold; height: 38px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-save:hover { background: #1d4ed8; }
+.btn-del {
+  background: #dc2626; color: white; border: none;
+  padding: 5px 11px; cursor: pointer; border-radius: 5px;
+  font-size: 12px; font-weight: bold;
+}
+.btn-del:hover { background: #b91c1c; }
+.btn-paid {
+  background: #16a34a; color: white; border: none;
+  padding: 5px 12px; cursor: pointer; border-radius: 5px;
+  font-size: 12px; font-weight: bold;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.btn-paid:hover { background: #15803d; }
+
+.btn-sort {
+  background: #0f766e; color: white; border: none;
+  padding: 9px 18px; cursor: pointer; border-radius: 6px;
+  font-size: 13px; font-weight: bold;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background 0.2s;
+}
+.btn-sort:hover { background: #0d9488; }
+.btn-sort.active { background: #134e4a; }
+
+.btn-refresh {
+  background: #1d4ed8; color: white; border: none;
+  padding: 9px 18px; cursor: pointer; border-radius: 6px;
+  font-size: 13px; font-weight: bold;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background 0.2s, transform 0.3s;
+}
+.btn-refresh:hover { background: #1e40af; }
+.btn-refresh.spin svg { animation: spin360 0.5s ease; }
+@keyframes spin360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.student-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.sort-indicator {
+  font-size: 11px;
+  color: #0f766e;
+  font-weight: bold;
+  background: #ccfbf1;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: none;
+}
+.sort-indicator.visible { display: inline-block; }
+
+/* Typewriting course combo */
+.course-combo-wrap { position: relative; display: inline-flex; flex-direction: column; }
+.course-combo-wrap input.course-input {
+  width: 175px;
+  padding: 9px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  height: 38px;
+  background: #f9fafb;
+  transition: border-color 0.2s;
+}
+.course-combo-wrap input.course-input:focus {
+  outline: none; border-color: #2563eb; background: #fff;
+}
+.course-dropdown {
+  position: absolute;
+  top: 40px; left: 0;
+  width: 200px;
+  background: #fff;
+  border: 1.5px solid #2563eb;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  z-index: 999;
+  display: none;
+  overflow: hidden;
+}
+.course-dropdown.open { display: block; }
+.course-option {
+  padding: 9px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #1e293b;
+  transition: background 0.15s;
+}
+.course-option:hover { background: #eff6ff; color: #2563eb; }
+.course-option.no-match { color: #94a3b8; font-style: italic; cursor: default; }
+.course-option.no-match:hover { background: #fff; }
+
+/* ─── SEARCH BOX ─────────────────────────────── */
+.searchbox {
+  padding: 9px 14px;
+  width: 260px;
+  margin-bottom: 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #f9fafb;
+}
+
+/* ─── TABLES ─────────────────────────────────── */
+.table-wrap {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+table { width: 100%; border-collapse: collapse; background: white; }
+th {
+  background: #1e40af;
+  color: white;
+  padding: 11px 13px;
+  font-size: 12.5px;
+  text-align: center;
+  white-space: nowrap;
+}
+td {
+  padding: 10px 13px;
+  text-align: center;
+  font-size: 13px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f8fafc; }
+.empty-td { color: #94a3b8; font-style: italic; padding: 28px; }
+
+/* Grand total row */
+.grand-row td {
+  background: #f0f9ff;
+  font-weight: bold;
+  border-top: 2px solid #2563eb;
+  color: #1e293b;
+}
+
+/* ─── BADGES ─────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+.b-green  { background: #dcfce7; color: #15803d; }
+.b-blue   { background: #dbeafe; color: #1d4ed8; }
+.b-amber  { background: #fef3c7; color: #b45309; }
+.b-red    { background: #fee2e2; color: #b91c1c; }
+.b-purple { background: #ede9fe; color: #6d28d9; }
+.b-teal   { background: #ccfbf1; color: #0f766e; }
+
+/* ─── PAID STUDENTS PANEL (Dashboard) ──────── */
+.paid-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0fdf4;
+}
+.paid-panel-header h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #15803d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.paid-count-badge {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* ─── PAGE VISIBILITY ────────────────────────── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ─── TOAST ──────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: #0f172a;
+  color: white;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+  z-index: 9999;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ─── REPORTS SUMMARY ────────────────────────── */
+.report-summary {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 16px;
+  line-height: 2;
+}
+
+
+/* ─── BRANCH FILTER TABS ─────────────────────── */
+.branch-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.branch-tab {
+  padding: 7px 18px;
+  border-radius: 20px;
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12.5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.branch-tab:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+.branch-tab.active { background: #1e40af; color: #fff; border-color: #1e40af; }
+.branch-tab.miet.active   { background: #0f766e; border-color: #0f766e; }
+.branch-tab.annanagar.active { background: #7c3aed; border-color: #7c3aed; }
+.branch-count {
+  background: rgba(255,255,255,0.25);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+}
+
+/* ─── BRANCH MINI CARDS (Dashboard) ─────────── */
+.branch-card-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.branch-card {
+  border-radius: 10px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.branch-card.miet     { background: linear-gradient(135deg,#e0fdf4,#ccfbf1); border-left: 5px solid #0f766e; }
+.branch-card.annanagar{ background: linear-gradient(135deg,#ede9fe,#ddd6fe); border-left: 5px solid #7c3aed; }
+.branch-card h4 { margin:0 0 10px; font-size:13px; font-weight:800; }
+.branch-card.miet h4     { color:#0f766e; }
+.branch-card.annanagar h4{ color:#6d28d9; }
+.branch-stat-row { display:flex; gap:16px; flex-wrap:wrap; }
+.branch-stat { display:flex; flex-direction:column; }
+.branch-stat span:first-child { font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; font-weight:bold; }
+.branch-stat span:last-child  { font-size:20px; font-weight:800; color:#1e293b; }
+
+/* ─── IMPORT PREVIEW MODAL ───────────────────── */
+#importModal {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.55);
+  z-index: 8888;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+#importModal.open { display: flex; }
+.import-modal-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  padding: 28px 28px 22px;
+  width: 95%;
+  max-width: 820px;
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: loginPop 0.3s cubic-bezier(0.34,1.3,0.64,1);
+}
+.import-modal-card h3 { margin:0 0 6px; font-size:17px; color:#1e293b; }
+.import-modal-card p  { margin:0 0 16px; font-size:12.5px; color:#64748b; }
+.import-preview-tabs  { display:flex; gap:8px; margin-bottom:14px; }
+.ipt { padding:6px 16px; border-radius:6px; border:2px solid #e2e8f0;
+  font-size:12.5px; font-weight:bold; cursor:pointer; background:#f8fafc; color:#475569; }
+.ipt.active { background:#1e40af; color:#fff; border-color:#1e40af; }
+.ipt.miet.active   { background:#0f766e; border-color:#0f766e; }
+.ipt.anna.active   { background:#7c3aed; border-color:#7c3aed; }
+.import-preview-table-wrap { max-height:320px; overflow-y:auto; border-radius:8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom:16px; }
+.import-preview-table-wrap table th { background:#1e40af; }
+.import-modal-footer { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.import-summary-text { font-size:12.5px; color:#475569; flex:1; }
+.btn-confirm-import {
+  background:#16a34a; color:#fff; border:none; padding:10px 22px;
+  border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.btn-confirm-import:hover { background:#15803d; }
+.btn-cancel-import {
+  background:#f1f5f9; color:#475569; border:1.5px solid #d1d5db;
+  padding:10px 18px; border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer;
+}
+.btn-cancel-import:hover { background:#e2e8f0; }
+.badge-miet     { background:#ccfbf1; color:#0f766e; }
+.badge-annanagar{ background:#ede9fe; color:#6d28d9; }
+
+/* ─── INSTITUTION BADGE IN TABLE ─────────────── */
+.inst-badge {
+  display:inline-block; padding:3px 9px; border-radius:12px;
+  font-size:11px; font-weight:bold; white-space:nowrap;
+}
+
+/* ─── EDIT BUTTON ────────────────────────────── */
+.btn-edit {
+  background: #f59e0b; color: white; border: none;
+  padding: 5px 11px; cursor: pointer; border-radius: 5px;
+  font-size: 12px; font-weight: bold;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.btn-edit:hover { background: #d97706; }
+
+/* ─── EDIT STUDENT MODAL ─────────────────────── */
+#editStudentModal {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.6);
+  z-index: 9000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+#editStudentModal.open { display: flex; }
+.edit-modal-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  padding: 28px 30px 24px;
+  width: 95%;
+  max-width: 680px;
+  animation: loginPop 0.3s cubic-bezier(0.34,1.3,0.64,1);
+}
+.edit-modal-card h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: #1e293b;
+  display: flex; align-items: center; gap: 8px;
+}
+.edit-modal-card p {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  color: #64748b;
+}
+.edit-search-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.edit-search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #f9fafb;
+}
+.edit-search-input:focus {
+  outline: none; border-color: #f59e0b; background: #fff;
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+}
+.btn-search-edit {
+  background: #f59e0b; color: white; border: none;
+  padding: 10px 18px; border-radius: 8px;
+  font-size: 13px; font-weight: bold; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-search-edit:hover { background: #d97706; }
+.edit-search-results {
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 18px;
+  display: none;
+}
+.edit-search-result-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.15s;
+}
+.edit-search-result-item:last-child { border-bottom: none; }
+.edit-search-result-item:hover { background: #fffbeb; }
+.edit-search-result-item.selected { background: #fef3c7; }
+.edit-result-name { font-weight: bold; flex: 1; }
+.edit-result-meta { font-size: 11px; color: #64748b; }
+.edit-form-fields { display: none; }
+.edit-form-fields.visible { display: block; }
+.edit-form-divider {
+  height: 1px; background: #f1f5f9; margin: 16px 0;
+}
+.edit-modal-footer {
+  display: flex; gap: 10px; align-items: center;
+  justify-content: flex-end; margin-top: 18px;
+  padding-top: 14px; border-top: 1px solid #f1f5f9;
+}
+.btn-save-edit {
+  background: #2563eb; color: white; border: none;
+  padding: 10px 22px; border-radius: 8px;
+  font-size: 13px; font-weight: bold; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-save-edit:hover { background: #1d4ed8; }
+.btn-cancel-edit {
+  background: #f1f5f9; color: #475569;
+  border: 1.5px solid #d1d5db;
+  padding: 10px 18px; border-radius: 8px;
+  font-size: 13px; font-weight: bold; cursor: pointer;
+}
+.btn-cancel-edit:hover { background: #e2e8f0; }
+.edit-selected-label {
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #92400e;
+  font-weight: bold;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.no-results-msg {
+  padding: 14px;
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 13px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN OVERLAY
+════════════════════════════════════════════ -->
+<div id="loginOverlay" style="display: none;">
+  <div class="login-card">
+    <div class="login-icon">🎓</div>
+    <h2>Sri Academy</h2>
+    <p>Education Management System</p>
+    <div class="login-field">
+      <label>User ID</label>
+      <input type="text" id="loginUser" placeholder="Enter your user ID" autocomplete="username" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+      <div class="show-pw-row">
+        <input type="checkbox" id="showPw" onchange="togglePw()">
+        <label for="showPw">Show password</label>
+      </div>
+    </div>
+    <button class="login-btn" onclick="doLogin()">🔐 Login</button>
+    <div class="login-error" id="loginError" style="display: none;">❌ Invalid user ID or password. Please try again.</div>
+    <div class="login-footer">Sri Academy · Secure Access</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════ -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">🎓</div>
+    <h2>Sri Academy</h2>
+    <small>Education Management</small>
+  </div>
+  <nav>
+    <button class="nav-item" id="nav-dashboard" onclick="showPage('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </button>
+    <button class="nav-item active" id="nav-students" onclick="showPage('students')">
+      <span class="nav-icon">🎓</span> Students
+    </button>
+    <button class="nav-item" id="nav-transactions" onclick="showPage('transactions')">
+      <span class="nav-icon">💰</span> Transactions
+    </button>
+    <button class="nav-item" id="nav-reports" onclick="showPage('reports')">
+      <span class="nav-icon">📈</span> Reports
+    </button>
+  </nav>
+  <div class="sidebar-footer">Sri Academy © 2025</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- HEADER with live clock -->
+  <div class="header">
+    <h2>🎓 Sri Academy — Education Management</h2>
+    <div style="display:flex;align-items:center;gap:20px">
+      <div class="header-clock">
+        <div class="header-date" id="headerDate">Friday, 27 March 2026</div>
+        <div class="header-time" id="headerTime">06:41:03 pm</div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- IMPORT / EXPORT PANEL -->
+  <div class="io-panel">
+    <h4>📂 Excel Import / Export</h4>
+    <label class="io-label" for="excelFileInput">📥 Import Excel</label>
+    <input type="file" id="excelFileInput" accept=".xlsx,.xls" onchange="importExcel(event)">
+    <button class="btn-export" onclick="exportExcel()">📤 Export to Excel</button>
+    <button class="btn-eod" onclick="endOfDay()">🔒 End of Day &amp; Export</button>
+    <span class="import-status" id="importStatus">✅ Data imported!</span>
+  
+<button class="btn-export" onclick="exportBackup()">📦 Backup Data</button>
+<label class="io-label">
+📥 Restore Backup
+<input type="file" accept=".json" onchange="importBackup(event)" hidden="">
+</label>
+<button class="btn-eod" onclick="shareFullSystem()">📤 One Click Share</button>
+
+</div>
+
+  <!-- ═══════════════════════════════════════
+       DASHBOARD PAGE
+  ════════════════════════════════════════ -->
+  <div id="dashboard" class="page">
+
+    <!-- Stat Cards -->
+    <div class="card-container">
+      <div class="card" data-icon="🎓">
+        <h3 id="cardTotalStudents">10</h3>
+        <p>Total Students</p>
+      </div>
+      <div class="card" data-icon="✅">
+        <h3 id="cardPaid">0</h3>
+        <p>Fee Paid</p>
+      </div>
+      <div class="card" data-icon="⏳">
+        <h3 id="cardPending">10</h3>
+        <p>Fee Pending</p>
+      </div>
+      <div class="card" data-icon="₹">
+        <h3 id="cardRevenue">₹1000.00</h3>
+        <p>Total Revenue</p>
+      </div>
+    </div>
+
+    <!-- Paid Students Live Table -->
+    <div class="section-box" style="border-left: 4px solid #16a34a;">
+      <div class="paid-panel-header">
+        <h3>✅ Paid Students — Live View</h3>
+        <span class="paid-count-badge" id="paidCountBadge">0 paid</span>
+      </div>
+      <div class="table-wrap">
+        <table id="paidDashTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Date Paid</th>
+              <th>Course</th>
+              <th>Credit (₹)</th>
+              <th>Debit (₹)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="paidDashBody"><tr><td colspan="7" class="empty-td">No paid students yet — go to <b>Students</b> tab and click ✔ Mark Paid.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Branch Summary Cards -->
+    <div class="branch-card-row">
+      <div class="branch-card miet">
+        <h4>🏫 MIET Students</h4>
+        <div class="branch-stat-row">
+          <div class="branch-stat"><span>Total</span><span id="bc_miet_total">10</span></div>
+          <div class="branch-stat"><span>Paid</span><span id="bc_miet_paid" style="color:#0f766e">0</span></div>
+          <div class="branch-stat"><span>Pending</span><span id="bc_miet_pending" style="color:#d97706">10</span></div>
+          <div class="branch-stat"><span>Revenue</span><span id="bc_miet_rev" style="color:#0f766e;font-size:16px">₹0</span></div>
+        </div>
+      </div>
+      <div class="branch-card annanagar">
+        <h4>🏢 Anna Nagar Students</h4>
+        <div class="branch-stat-row">
+          <div class="branch-stat"><span>Total</span><span id="bc_anna_total">0</span></div>
+          <div class="branch-stat"><span>Paid</span><span id="bc_anna_paid" style="color:#7c3aed">0</span></div>
+          <div class="branch-stat"><span>Pending</span><span id="bc_anna_pending" style="color:#d97706">0</span></div>
+          <div class="branch-stat"><span>Revenue</span><span id="bc_anna_rev" style="color:#7c3aed;font-size:16px">₹0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- All Students Overview -->
+    <div class="section-box">
+      <h3>📋 All Students — Live Overview</h3>
+      <div class="table-wrap">
+        <table id="dashAllTable">
+          <thead>
+            <tr>
+              <th>#</th><th>Name</th><th>Institution</th><th>Course</th>
+              <th>Fee (₹)</th><th>Date Added</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="dashAllBody"><tr>
+        <td>1</td>
+        <td><strong>Vasinya</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-teal">Computer</span></td>
+        <td>₹1000.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr><tr>
+        <td>2</td>
+        <td><strong>Vasanth</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-blue">Tuition</span></td>
+        <td>₹500.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr><tr>
+        <td>3</td>
+        <td><strong>Jayasree</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-amber">Hindi</span></td>
+        <td>₹700.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr><tr>
+        <td>4</td>
+        <td><strong>Jayavarshan</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-blue">Tuition</span></td>
+        <td>₹800.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr><tr>
+        <td>5</td>
+        <td><strong>Dhanya Sree</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-blue">Tuition</span></td>
+        <td>₹500.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr><tr>
+        <td>6</td>
+        <td><strong>Sai Sree</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-purple">Tuition/Hindi</span></td>
+        <td>₹1000.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr><tr>
+        <td>7</td>
+        <td><strong>Vimal Kumar</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-amber">Hindi</span></td>
+        <td>₹700.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr><tr>
+        <td>8</td>
+        <td><strong>Abishek</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-amber">Hindi</span></td>
+        <td>₹900.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr><tr>
+        <td>9</td>
+        <td><strong>Suhashini</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-teal">Computer</span></td>
+        <td>₹1000.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr><tr>
+        <td>10</td>
+        <td><strong>Mohamed Farhan</strong></td>
+        <td><span class="badge inst-badge badge-miet">MIET</span></td>
+        <td><span class="badge b-purple">Tuition/Hindi</span></td>
+        <td>₹2000.00</td>
+        <td>27 March 2026</td>
+        <td><span class="badge b-amber">⏳ Pending</span></td>
+      </tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+
+
+  <!-- ═══════════════════════════════════════
+       STUDENTS PAGE
+  ════════════════════════════════════════ -->
+  <div id="students" class="page active">
+
+    <!-- Add Student Form -->
+    <div class="section-box">
+      <h3>🎓 Add New Student</h3>
+      <div class="form-row">
+
+        <div class="form-group">
+          <label>Full Name</label>
+          <input id="stuName" placeholder="Student name" style="width:180px">
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          <input id="stuPhone" placeholder="Phone number" style="width:150px">
+        </div>
+
+        <div class="form-group">
+          <label>Course</label>
+          <div class="course-combo-wrap">
+            <input class="course-input" id="stuCourseInput" placeholder="Type or select course…" autocomplete="off" oninput="filterCourseDropdown()" onfocus="openCourseDropdown()" onblur="closeCourseDropdown()" onkeydown="courseKeyNav(event)">
+            <input type="hidden" id="stuCourse">
+            <div class="course-dropdown" id="courseDropdown">
+              <div class="course-option" data-value="Tuition" onmousedown="selectCourse('Tuition','📚 Tuition')">📚 Tuition</div>
+              <div class="course-option" data-value="Hindi" onmousedown="selectCourse('Hindi','🔤 Hindi')">🔤 Hindi</div>
+              <div class="course-option" data-value="Tuition/Hindi" onmousedown="selectCourse('Tuition/Hindi','📖 Tuition / Hindi')">📖 Tuition / Hindi</div>
+              <div class="course-option" data-value="Computer" onmousedown="selectCourse('Computer','💻 Computer')">💻 Computer</div>
+              <div class="course-option" data-value="AutoCAD" onmousedown="selectCourse('AutoCAD','📐 AutoCAD')">📐 AutoCAD</div>
+              <div class="course-option" data-value="Typewriting" onmousedown="selectCourse('Typewriting','⌨️ Typewriting')">⌨️ Typewriting</div>
+              <div class="course-option" data-value="Others" onmousedown="selectCourse('Others','➕ Others')">➕ Others</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Fee Amount (₹)</label>
+          <input type="number" id="stuFee" placeholder="0.00" style="width:130px" oninput="updateFormCalc()">
+        </div>
+
+        <div class="form-group">
+          <label>Institution</label>
+          <select id="stuInstitution" style="width:140px">
+            <option>MIET</option>
+            <option>Anna Nagar</option>
+            <option>Others</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Month</label>
+          <select id="stuMonth" style="width:130px">
+            <option>January</option><option>February</option><option>March</option>
+            <option>April</option><option>May</option><option>June</option>
+            <option>July</option><option>August</option><option>September</option>
+            <option>October</option><option>November</option><option>December</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button class="btn-save" onclick="saveStudent()">➕ Add Student</button>
+        </div>
+        <div class="form-group" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button class="btn-save" id="btnSaveData" onclick="saveStudentData()" style="background:#16a34a;min-width:130px">💾 Save Data</button>
+        </div>
+      </div>
+
+      <!-- Auto-calculate bar -->
+      <div class="auto-total-bar">
+        <div class="at-item">
+          <span>Course</span>
+          <span class="at-val blue" id="fc_course">—</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>Fee Entered</span>
+          <span class="at-val green" id="fc_fee">₹ 0.00</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>Total Students</span>
+          <span class="at-val blue" id="fc_total">10</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>Paid Students</span>
+          <span class="at-val green" id="fc_paid">0</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>Pending</span>
+          <span class="at-val amber" id="fc_pending">10</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>Total Fees Collected</span>
+          <span class="at-val green" id="fc_collected">₹ 0.00</span>
+        </div>
+      </div>
+
+      <!-- Fee Intelligence Bar -->
+      <div class="auto-total-bar" style="margin-top:10px;background:linear-gradient(135deg,#fef9c3,#fef3c7);border-color:#fde68a;">
+        <div class="at-item">
+          <span>💰 Total Expected</span>
+          <span class="at-val" style="color:#0f766e;font-size:20px" id="fc_expected">₹ 9,100</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>✅ Collected</span>
+          <span class="at-val green" id="fc_collected2">₹ 0</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>⏳ Still Pending</span>
+          <span class="at-val amber" id="fc_still_pending">₹ 9,100</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>📊 Collection %</span>
+          <span class="at-val" style="color:#7c3aed" id="fc_pct">0%</span>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="margin-top:10px;padding:0 2px;">
+        <div style="background:#e2e8f0;border-radius:999px;height:12px;overflow:hidden;">
+          <div id="fc_progress" style="height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:999px;width:0%;transition:width 0.4s ease;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:3px;">
+          <span style="font-size:10px;color:#16a34a;font-weight:bold" id="fc_prog_paid_lbl">Paid: ₹0 (0 students)</span>
+          <span style="font-size:10px;color:#d97706;font-weight:bold" id="fc_prog_pend_lbl">Remaining: ₹9,100 (10 students)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Branch Filter Tabs -->
+    <div class="branch-tabs" id="branchTabs">
+      <span style="font-size:12px;font-weight:bold;color:#64748b;margin-right:4px">Filter:</span>
+      <button class="branch-tab active" data-branch="all" onclick="setBranchFilter('all')">🏫 All Branches <span class="branch-count" id="tc_all">10</span></button>
+      <button class="branch-tab miet" data-branch="MIET" onclick="setBranchFilter('MIET')">🏫 MIET <span class="branch-count" id="tc_miet">10</span></button>
+      <button class="branch-tab annanagar" data-branch="Anna Nagar" onclick="setBranchFilter('Anna Nagar')">🏢 Anna Nagar <span class="branch-count" id="tc_anna">0</span></button>
+      <button class="branch-tab" data-branch="Others" onclick="setBranchFilter('Others')">➕ Others <span class="branch-count" id="tc_others">0</span></button>
+    </div>
+
+    <!-- Students Table Toolbar -->
+    <div class="student-toolbar">
+      <input class="searchbox" id="searchStuBox" placeholder="🔍 Search by name / course / phone…" onkeyup="filterStudents()" style="margin-bottom:0">
+      <button class="btn-sort" id="btnSort" onclick="sortStudentsAZ()" title="Sort students A to Z by name">
+        🔤 Sort A → Z
+      </button>
+      <button class="btn-refresh" id="btnRefresh" onclick="refreshStudentTable()" title="Refresh student list">
+        <svg id="refreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Refresh
+      </button>
+      <span class="sort-indicator" id="sortIndicator">✅ Sorted A → Z</span>
+      <button class="btn-edit" onclick="openEditModal()" title="Edit a student's details">
+        ✏️ Edit Student
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table id="studentTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Name</th><th>Phone</th>
+            <th>Course</th><th>Fee (₹)</th>
+            <th>Institution</th><th>Month</th>
+            <th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="studentBody"><tr>
+      <td>1</td>
+      <td><strong>Vasinya</strong></td>
+      <td>9345676447</td>
+      <td><span class="badge b-teal">Computer</span></td>
+      <td>₹1000</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>March</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(0)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(0)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(0)">🗑 Del</button>
+      </td>
+    </tr><tr>
+      <td>2</td>
+      <td><strong>Vasanth</strong></td>
+      <td>9944197989</td>
+      <td><span class="badge b-blue">Tuition</span></td>
+      <td>₹500</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>March</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(1)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(1)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(1)">🗑 Del</button>
+      </td>
+    </tr><tr>
+      <td>3</td>
+      <td><strong>Jayasree</strong></td>
+      <td>7540014923</td>
+      <td><span class="badge b-amber">Hindi</span></td>
+      <td>₹700</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>May</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(2)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(2)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(2)">🗑 Del</button>
+      </td>
+    </tr><tr>
+      <td>4</td>
+      <td><strong>Jayavarshan</strong></td>
+      <td>9524514923</td>
+      <td><span class="badge b-blue">Tuition</span></td>
+      <td>₹800</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>May</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(3)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(3)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(3)">🗑 Del</button>
+      </td>
+    </tr><tr>
+      <td>5</td>
+      <td><strong>Dhanya Sree</strong></td>
+      <td>8778767671</td>
+      <td><span class="badge b-blue">Tuition</span></td>
+      <td>₹500</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>April</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(4)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(4)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(4)">🗑 Del</button>
+      </td>
+    </tr><tr>
+      <td>6</td>
+      <td><strong>Sai Sree</strong></td>
+      <td>9524509661</td>
+      <td><span class="badge b-purple">Tuition/Hindi</span></td>
+      <td>₹1000</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>April</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(5)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(5)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(5)">🗑 Del</button>
+      </td>
+    </tr><tr>
+      <td>7</td>
+      <td><strong>Vimal Kumar</strong></td>
+      <td>9655239579</td>
+      <td><span class="badge b-amber">Hindi</span></td>
+      <td>₹700</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>April</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(6)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(6)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(6)">🗑 Del</button>
+      </td>
+    </tr><tr>
+      <td>8</td>
+      <td><strong>Abishek</strong></td>
+      <td>7639717373</td>
+      <td><span class="badge b-amber">Hindi</span></td>
+      <td>₹900</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>April</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(7)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(7)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(7)">🗑 Del</button>
+      </td>
+    </tr><tr>
+      <td>9</td>
+      <td><strong>Suhashini</strong></td>
+      <td>9942396759</td>
+      <td><span class="badge b-teal">Computer</span></td>
+      <td>₹1000</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>April</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(8)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(8)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(8)">🗑 Del</button>
+      </td>
+    </tr><tr>
+      <td>10</td>
+      <td><strong>Mohamed Farhan</strong></td>
+      <td>8925682861</td>
+      <td><span class="badge b-purple">Tuition/Hindi</span></td>
+      <td>₹2000</td>
+      <td><span class="badge inst-badge badge-miet">MIET</span></td>
+      <td>April</td>
+      <td><span class="badge b-amber">⏳ Pending</span></td>
+      <td>
+        <button class="btn-paid" onclick="markPaid(9)">✔ Mark Paid</button> 
+        <button class="btn-edit" onclick="openEditModalForStudent(9)" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(9)">🗑 Del</button>
+      </td>
+    </tr></tbody>
+      </table>
+    </div>
+  </div><!-- /students -->
+
+<!-- ═══════════════════════════════════════════
+     EDIT STUDENT MODAL
+════════════════════════════════════════════ -->
+<div id="editStudentModal">
+  <div class="edit-modal-card">
+    <h3>✏️ Edit Student</h3>
+    <p>Search for a student by name, phone, or course — then update their details.</p>
+
+    <!-- Search Row -->
+    <div class="edit-search-row">
+      <input class="edit-search-input" id="editSearchInput" placeholder="🔍 Type student name, phone, or course…" oninput="searchStudentsForEdit()" onkeydown="if(event.key==='Enter') searchStudentsForEdit()">
+      <button class="btn-search-edit" onclick="searchStudentsForEdit()">🔍 Search</button>
+    </div>
+
+    <!-- Search Results -->
+    <div class="edit-search-results" id="editSearchResults"></div>
+
+    <!-- Selected Student Info -->
+    <div class="edit-selected-label" id="editSelectedLabel" style="display:none">
+      <span>📌</span>
+      <span id="editSelectedName">—</span>
+    </div>
+
+    <!-- Edit Fields -->
+    <div class="edit-form-fields" id="editFormFields">
+      <div class="form-row" style="gap:12px">
+
+        <div class="form-group">
+          <label>Full Name</label>
+          <input id="editStuName" placeholder="Student name" style="width:180px">
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          <input id="editStuPhone" placeholder="Phone number" style="width:150px">
+        </div>
+
+        <div class="form-group">
+          <label>Course</label>
+          <div class="course-combo-wrap">
+            <input class="course-input" id="editStuCourseInput" placeholder="Type or select course…" autocomplete="off" oninput="filterEditCourseDropdown()" onfocus="openEditCourseDropdown()" onblur="closeEditCourseDropdown()" onkeydown="editCourseKeyNav(event)">
+            <input type="hidden" id="editStuCourse">
+            <div class="course-dropdown" id="editCourseDropdown">
+              <div class="course-option" data-value="Tuition" onmousedown="selectEditCourse('Tuition','📚 Tuition')">📚 Tuition</div>
+              <div class="course-option" data-value="Hindi" onmousedown="selectEditCourse('Hindi','🔤 Hindi')">🔤 Hindi</div>
+              <div class="course-option" data-value="Tuition/Hindi" onmousedown="selectEditCourse('Tuition/Hindi','📖 Tuition / Hindi')">📖 Tuition / Hindi</div>
+              <div class="course-option" data-value="Computer" onmousedown="selectEditCourse('Computer','💻 Computer')">💻 Computer</div>
+              <div class="course-option" data-value="AutoCAD" onmousedown="selectEditCourse('AutoCAD','📐 AutoCAD')">📐 AutoCAD</div>
+              <div class="course-option" data-value="Typewriting" onmousedown="selectEditCourse('Typewriting','⌨️ Typewriting')">⌨️ Typewriting</div>
+              <div class="course-option" data-value="Others" onmousedown="selectEditCourse('Others','➕ Others')">➕ Others</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Fee Amount (₹)</label>
+          <input type="number" id="editStuFee" placeholder="0.00" style="width:120px">
+        </div>
+
+      </div>
+      <div class="form-row" style="gap:12px; margin-top:4px">
+
+        <div class="form-group">
+          <label>Institution</label>
+          <select id="editStuInstitution" style="width:140px">
+            <option>MIET</option>
+            <option>Anna Nagar</option>
+            <option>Others</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Month</label>
+          <select id="editStuMonth" style="width:130px">
+            <option>January</option><option>February</option><option>March</option>
+            <option>April</option><option>May</option><option>June</option>
+            <option>July</option><option>August</option><option>September</option>
+            <option>October</option><option>November</option><option>December</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Fee Status</label>
+          <select id="editStuPaid" style="width:140px">
+            <option value="pending">⏳ Pending</option>
+            <option value="paid">✅ Paid</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="edit-modal-footer">
+      <button class="btn-cancel-edit" onclick="closeEditModal()">✖ Cancel</button>
+      <button class="btn-save-edit" id="btnSaveEdit" onclick="saveEditStudent()" style="display:none">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+
+  <!-- ═══════════════════════════════════════
+       TRANSACTIONS PAGE
+  ════════════════════════════════════════ -->
+  <div id="transactions" class="page">
+
+    <!-- Add Transaction Form -->
+    <div class="section-box">
+      <h3>💰 Add Transaction</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Name</label>
+          <input id="txName" placeholder="Student / person name" style="width:180px">
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="txDate">
+        </div>
+        <div class="form-group">
+          <label>Credit (₹)</label>
+          <input type="number" id="txCredit" placeholder="0.00" style="width:130px" oninput="updateTxCalc()">
+        </div>
+        <div class="form-group">
+          <label>Debit (₹)</label>
+          <input type="number" id="txDebit" placeholder="0.00" style="width:130px" oninput="updateTxCalc()">
+        </div>
+        <div class="form-group">
+          <label>Note (optional)</label>
+          <input id="txNote" placeholder="Remark…" style="width:180px">
+        </div>
+        <div class="form-group" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button class="btn-save" onclick="addTransaction()">➕ Add</button>
+        </div>
+      </div>
+
+      <!-- Auto-calc bar -->
+      <div class="auto-total-bar">
+        <div class="at-item">
+          <span>This Credit</span>
+          <span class="at-val green" id="tx_this_credit">₹ 0.00</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>This Debit</span>
+          <span class="at-val red" id="tx_this_debit">₹ 0.00</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>Total Credit</span>
+          <span class="at-val green" id="tx_total_credit">₹ 1000.00</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>Total Debit</span>
+          <span class="at-val red" id="tx_total_debit">₹ 0.00</span>
+        </div>
+        <div class="at-divider"></div>
+        <div class="at-item">
+          <span>Net Balance</span>
+          <span class="at-val blue" id="tx_net">₹ 1000.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transaction Table -->
+    <div class="table-wrap">
+      <table id="transactionTable">
+        <thead>
+          <tr>
+            <th>#</th><th>Name</th><th>Date</th>
+            <th>Credit (₹)</th><th>Debit (₹)</th>
+            <th>Running Total (₹)</th><th>Note</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="transactionBody"><tr>
+      <td>1</td>
+      <td><strong>Vasinya</strong></td>
+      <td>2026-03-27</td>
+      <td><span style="color:#16a34a;font-weight:bold">₹1000.00</span></td>
+      <td>—</td>
+      <td style="color:#16a34a;font-weight:bold">₹1000.00</td>
+      <td>Good</td>
+      <td><button class="btn-del" onclick="deleteTx(0)">🗑 Del</button></td>
+    </tr></tbody>
+        <tfoot id="transactionFoot"><tr class="grand-row">
+    <td colspan="3" style="text-align:right;padding-right:16px">Grand Total →</td>
+    <td style="color:#16a34a;font-weight:800">₹1000.00</td>
+    <td style="color:#dc2626;font-weight:800">₹0.00</td>
+    <td style="color:#16a34a;font-weight:800">₹1000.00</td>
+    <td colspan="2"></td>
+  </tr></tfoot>
+      </table>
+    </div>
+  </div><!-- /transactions -->
+
+
+  <!-- ═══════════════════════════════════════
+       REPORTS PAGE
+  ════════════════════════════════════════ -->
+  <div id="reports" class="page">
+    <div class="section-box">
+      <h3>📈 Fee Summary Report</h3>
+
+      <!-- 6 Summary cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;">
+
+        <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:10px;padding:14px 16px;border-left:5px solid #2563eb;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">👥 Total Students</div>
+          <div id="rpt_stu" style="font-size:28px;font-weight:800;color:#1e293b;">0</div>
+        </div>
+
+        <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:10px;padding:14px 16px;border-left:5px solid #0f766e;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:#0f766e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">💰 Total Expected Fees</div>
+          <div id="rpt_expected" style="font-size:22px;font-weight:800;color:#0f766e;">₹0</div>
+          <div style="font-size:10px;color:#64748b;margin-top:2px;">All students × their fee</div>
+        </div>
+
+        <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:10px;padding:14px 16px;border-left:5px solid #16a34a;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">✅ Amount Collected</div>
+          <div id="rpt_collected" style="font-size:22px;font-weight:800;color:#16a34a;">₹0</div>
+          <div style="font-size:10px;color:#64748b;margin-top:2px;">Paid students only</div>
+        </div>
+
+        <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-radius:10px;padding:14px 16px;border-left:5px solid #f59e0b;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">⏳ Still to Collect</div>
+          <div id="rpt_remaining" style="font-size:22px;font-weight:800;color:#d97706;">₹0</div>
+          <div style="font-size:10px;color:#64748b;margin-top:2px;">Pending students fees</div>
+        </div>
+
+        <div style="background:linear-gradient(135deg,#fef2f2,#fee2e2);border-radius:10px;padding:14px 16px;border-left:5px solid #dc2626;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:#b91c1c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">📉 Total Expenses</div>
+          <div id="rpt_expenses" style="font-size:22px;font-weight:800;color:#dc2626;">₹0</div>
+          <div style="font-size:10px;color:#64748b;margin-top:2px;">All debits recorded</div>
+        </div>
+
+        <div style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:10px;padding:14px 16px;border-left:5px solid #7c3aed;text-align:center;">
+          <div style="font-size:10px;font-weight:700;color:#6d28d9;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">🏦 Net Balance</div>
+          <div id="rpt_net" style="font-size:22px;font-weight:800;color:#7c3aed;">₹0</div>
+          <div style="font-size:10px;color:#64748b;margin-top:2px;">Collected − Expenses</div>
+        </div>
+
+      </div>
+
+      <!-- Collection Progress -->
+      <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;margin-bottom:12px;border:1.5px solid #e2e8f0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:13px;font-weight:700;color:#1e293b;">📊 Fee Collection Progress</span>
+          <span id="rpt_pct" style="font-size:14px;font-weight:800;color:#2563eb;">0%</span>
+        </div>
+        <div style="background:#e2e8f0;border-radius:999px;height:16px;overflow:hidden;">
+          <div id="rpt_bar" style="height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:999px;width:0%;transition:width 0.5s ease;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;">
+          <span style="font-size:11px;color:#16a34a;font-weight:bold;" id="rpt_bar_paid_lbl">✅ Paid: 0 students</span>
+          <span style="font-size:11px;color:#d97706;font-weight:bold;" id="rpt_bar_pend_lbl">⏳ Pending: 0 students</span>
+        </div>
+      </div>
+
+      <div id="reportSummary" style="font-size:11px;color:#94a3b8;padding:4px 0;border-top:1px solid #f1f5f9;">Loading…</div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="reportTable"></table>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+
+<!-- ═══════════════════════════════════════════
+     IMPORT PREVIEW MODAL
+════════════════════════════════════════════ -->
+<div id="importModal">
+  <div class="import-modal-card">
+    <h3>📥 Excel Import Preview</h3>
+    <p id="importModalDesc">Review the data before importing into the dashboard.</p>
+    <div class="import-preview-tabs" id="importPreviewTabs"></div>
+    <div class="import-preview-table-wrap">
+      <table id="importPreviewTable"></table>
+    </div>
+    <div class="import-modal-footer">
+      <span class="import-summary-text" id="importSummaryText"></span>
+      <button class="btn-cancel-import" onclick="closeImportModal()">✖ Cancel</button>
+      <button class="btn-confirm-import" onclick="confirmImport()">✅ Confirm Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" style="display: none;">👋 Welcome, Admin!</div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+
+/* ── LOGIN ──────────────────────────────────── */
+const CREDENTIALS = { user: "admin", pass: "admin123" }
+
+function doLogin() {
+  const u = document.getElementById("loginUser").value.trim()
+  const p = document.getElementById("loginPass").value
+  const err = document.getElementById("loginError")
+  if (u === CREDENTIALS.user && p === CREDENTIALS.pass) {
+    document.getElementById("loginOverlay").style.display = "none"
+    err.style.display = "none"
+    showToast("👋 Welcome, Admin!")
+  } else {
+    err.style.display = "block"
+    document.getElementById("loginPass").value = ""
+    document.getElementById("loginPass").focus()
+    // Shake animation
+    const card = document.querySelector(".login-card")
+    card.style.animation = "none"
+    card.offsetHeight // reflow
+    card.style.animation = "shake 0.4s ease"
+  }
+}
+
+function doLogout() {
+  if (!confirm("Logout from Sri Academy?")) return
+  document.getElementById("loginUser").value = ""
+  document.getElementById("loginPass").value = ""
+  document.getElementById("loginError").style.display = "none"
+  document.getElementById("loginOverlay").style.display = "flex"
+  showToast("🔒 Logged out successfully")
+}
+
+function togglePw() {
+  const inp = document.getElementById("loginPass")
+  inp.type = document.getElementById("showPw").checked ? "text" : "password"
+}
+
+/* ── STATE ─────────────────────────────────── */
+let students     = JSON.parse(localStorage.getItem("sa_students"))     || []
+let transactions = JSON.parse(localStorage.getItem("sa_transactions")) || []
+
+/* ── CLOCK ──────────────────────────────────── */
+function tickClock() {
+  const n = new Date()
+  document.getElementById("headerDate").textContent =
+    n.toLocaleDateString("en-IN", { weekday:"long", day:"2-digit", month:"long", year:"numeric" })
+  document.getElementById("headerTime").textContent =
+    n.toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:true })
+}
+setInterval(tickClock, 1000); tickClock()
+
+/* Current date for "paid date" display */
+function currentDateStr() {
+  return new Date().toLocaleDateString("en-IN", { day:"2-digit", month:"long", year:"numeric" })
+}
+
+/* Set today's date in date inputs */
+const todayISO = new Date().toISOString().slice(0,10)
+document.querySelectorAll('input[type="date"]').forEach(el => { if (!el.value) el.value = todayISO })
+
+/* ── PERSIST ────────────────────────────────── */
+function saveLocal() {
+  localStorage.setItem("sa_students",     JSON.stringify(students))
+  localStorage.setItem("sa_transactions", JSON.stringify(transactions))
+}
+
+/* ── TOAST ──────────────────────────────────── */
+function showToast(msg) {
+  const t = document.getElementById("toast")
+  t.innerText = msg; t.style.display = "block"
+  setTimeout(() => t.style.display = "none", 3000)
+}
+
+/* ── NAVIGATION ─────────────────────────────── */
+function showPage(page) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"))
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"))
+  document.getElementById(page).classList.add("active")
+  document.getElementById("nav-" + page).classList.add("active")
+  if (page === "reports")      loadReport()
+  if (page === "transactions") { renderTransactions(); updateTxCalc(); }
+  if (page === "students")     updateFormCalc()
+}
+
+/* ── TOTALS ─────────────────────────────────── */
+function sumCredit() { return transactions.reduce((s,t) => s + Number(t.credit||0), 0) }
+function sumDebit()  { return transactions.reduce((s,t) => s + Number(t.debit||0),  0) }
+function netBal()    { return sumCredit() - sumDebit() }
+
+/* ════════════════════════════════════════════
+   STUDENTS
+════════════════════════════════════════════ */
+const COURSE_BADGES = {
+  "Tuition":       "b-blue",
+  "Hindi":         "b-amber",
+  "Tuition/Hindi": "b-purple",
+  "Computer":      "b-teal",
+  "AutoCAD":       "b-red",
+  "Typewriting":   "b-purple",
+  "Others":        "b-green"
+}
+
+function saveStudent() {
+  const name        = document.getElementById("stuName").value.trim()
+  const phone       = document.getElementById("stuPhone").value.trim()
+  const course      = document.getElementById("stuCourse").value || document.getElementById("stuCourseInput").value.trim()
+  const fee         = parseFloat(document.getElementById("stuFee").value) || 0
+  const institution = document.getElementById("stuInstitution").value
+  const month       = document.getElementById("stuMonth").value
+
+  if (!name)   { showToast("⚠️ Please enter student name!"); return }
+  if (!course) { showToast("⚠️ Please select a course!"); return }
+
+  students.push({
+    name, phone, course, fee, institution, month,
+    paid: false, paidDate: "", addedDate: currentDateStr()
+  })
+  saveLocal(); renderStudents(); refreshDashboard(); updateFormCalc()
+
+  document.getElementById("stuName").value  = ""
+  document.getElementById("stuPhone").value = ""
+  document.getElementById("stuFee").value   = ""
+  document.getElementById("stuCourse").value = ""
+  document.getElementById("stuCourseInput").value = ""
+  showToast("✅ Student added!")
+}
+
+function markPaid(i) {
+  if (students[i].paid) return
+  students[i].paid     = true
+  students[i].paidDate = currentDateStr()
+
+  /* Auto-log fee as credit transaction */
+  transactions.push({
+    name:   students[i].name,
+    date:   new Date().toISOString().slice(0,10),
+    credit: students[i].fee,
+    debit:  0,
+    note:   "Fee paid — " + students[i].course
+  })
+  saveLocal()
+  renderStudents(); renderTransactions(); refreshDashboard(); updateFormCalc()
+  showToast("✅ " + students[i].name + " marked as Paid!")
+}
+
+function deleteStudent(i) {
+  if (!confirm("Delete student: " + students[i].name + "?")) return
+  students.splice(i,1)
+  saveLocal(); renderStudents(); refreshDashboard(); updateFormCalc()
+  showToast("🗑️ Student deleted")
+}
+
+function renderStudents() {
+  const tbody = document.getElementById("studentBody")
+  updateBranchTabCounts()
+  const filtered = _activeBranch === "all"
+    ? students
+    : _activeBranch === "Others"
+      ? students.filter(s => s.institution !== "MIET" && s.institution !== "Anna Nagar")
+      : students.filter(s => s.institution === _activeBranch)
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-td">${students.length===0?"No students added yet.":"No students in this branch."}</td></tr>`
+    return
+  }
+  tbody.innerHTML = filtered.map((s, fi) => {
+    const i       = students.indexOf(s)
+    const cls     = COURSE_BADGES[s.course] || "b-blue"
+    const instCls = s.institution === "MIET" ? "badge-miet" : s.institution === "Anna Nagar" ? "badge-annanagar" : "b-blue"
+    const status  = s.paid
+      ? `<span class="badge b-green">✅ Paid</span>`
+      : `<span class="badge b-amber">⏳ Pending</span>`
+    const actionPaid = s.paid ? "" :
+      `<button class="btn-paid" onclick="markPaid(${i})">✔ Mark Paid</button> `
+    return `<tr>
+      <td>${fi+1}</td>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.phone||"—"}</td>
+      <td><span class="badge ${cls}">${s.course}</span></td>
+      <td>₹${s.fee||0}</td>
+      <td><span class="badge inst-badge ${instCls}">${s.institution||"—"}</span></td>
+      <td>${s.month||"—"}</td>
+      <td>${status}</td>
+      <td>
+        ${actionPaid}
+        <button class="btn-edit" onclick="openEditModalForStudent(${i})" title="Edit this student">✏️</button>
+        <button class="btn-del" onclick="deleteStudent(${i})">🗑 Del</button>
+      </td>
+    </tr>`
+  }).join("")
+}
+
+function filterStudents() {
+  const val = document.getElementById("searchStuBox").value.toLowerCase()
+  document.querySelectorAll("#studentBody tr").forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none"
+  })
+}
+
+/* Auto-calc summary in Students form */
+function updateFormCalc() {
+  const course    = document.getElementById("stuCourse") ? document.getElementById("stuCourse").value : ""
+  const fee       = parseFloat(document.getElementById("stuFee") ? document.getElementById("stuFee").value : 0) || 0
+  const paid      = students.filter(s => s.paid)
+  const pending   = students.filter(s => !s.paid)
+  const collected = paid.reduce((s,st) => s + Number(st.fee||0), 0)
+  const expected  = students.reduce((s,st) => s + Number(st.fee||0), 0)
+  const stillPend = pending.reduce((s,st) => s + Number(st.fee||0), 0)
+  const pct       = expected > 0 ? Math.round((collected / expected) * 100) : 0
+
+  document.getElementById("fc_course").textContent    = course || "—"
+  document.getElementById("fc_fee").textContent       = "₹ " + fee.toFixed(2)
+  document.getElementById("fc_total").textContent     = students.length
+  document.getElementById("fc_paid").textContent      = paid.length
+  document.getElementById("fc_pending").textContent   = pending.length
+  document.getElementById("fc_collected").textContent = "₹ " + collected.toFixed(2)
+
+  // Fee intelligence bar
+  const expEl = document.getElementById("fc_expected")
+  const col2El = document.getElementById("fc_collected2")
+  const pendEl = document.getElementById("fc_still_pending")
+  const pctEl  = document.getElementById("fc_pct")
+  const progEl = document.getElementById("fc_progress")
+  const paidLblEl = document.getElementById("fc_prog_paid_lbl")
+  const pendLblEl = document.getElementById("fc_prog_pend_lbl")
+  if (expEl) expEl.textContent     = "₹ " + expected.toLocaleString("en-IN")
+  if (col2El) col2El.textContent   = "₹ " + collected.toLocaleString("en-IN")
+  if (pendEl) pendEl.textContent   = "₹ " + stillPend.toLocaleString("en-IN")
+  if (pctEl)  pctEl.textContent    = pct + "%"
+  if (progEl) progEl.style.width   = pct + "%"
+  if (paidLblEl) paidLblEl.textContent = "Paid: ₹" + collected.toLocaleString("en-IN") + " (" + paid.length + " students)"
+  if (pendLblEl) pendLblEl.textContent = "Remaining: ₹" + stillPend.toLocaleString("en-IN") + " (" + pending.length + " students)"
+}
+
+/* 💾 Save Data button — saves to localStorage + refreshes all */
+function saveStudentData() {
+  saveLocal()
+  renderStudents()
+  renderTransactions()
+  refreshDashboard()
+  updateFormCalc()
+  updateBranchTabCounts()
+  const btn = document.getElementById("btnSaveData")
+  if (btn) {
+    btn.textContent = "✅ Saved!"
+    btn.style.background = "#0f766e"
+    setTimeout(() => { btn.innerHTML = "💾 Save Data"; btn.style.background = "#16a34a" }, 2000)
+  }
+  showToast("💾 All data saved successfully! (" + students.length + " students, " + transactions.length + " transactions)")
+}
+
+/* ════════════════════════════════════════════
+   TRANSACTIONS
+════════════════════════════════════════════ */
+function addTransaction() {
+  const name   = document.getElementById("txName").value.trim()
+  const date   = document.getElementById("txDate").value
+  const credit = parseFloat(document.getElementById("txCredit").value) || 0
+  const debit  = parseFloat(document.getElementById("txDebit").value)  || 0
+  const note   = document.getElementById("txNote").value.trim()
+
+  if (!name)             { showToast("⚠️ Please enter a name!"); return }
+  if (!credit && !debit) { showToast("⚠️ Enter at least Credit or Debit amount!"); return }
+
+  transactions.push({ name, date, credit, debit, note })
+  saveLocal(); renderTransactions(); refreshDashboard()
+
+  document.getElementById("txName").value   = ""
+  document.getElementById("txCredit").value = ""
+  document.getElementById("txDebit").value  = ""
+  document.getElementById("txNote").value   = ""
+  updateTxCalc()
+  showToast("✅ Transaction added!")
+}
+
+function renderTransactions() {
+  const tbody = document.getElementById("transactionBody")
+  const tfoot = document.getElementById("transactionFoot")
+
+  if (transactions.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-td">No transactions yet.</td></tr>`
+    tfoot.innerHTML = ""
+    return
+  }
+
+  let runCredit = 0, runDebit = 0
+  tbody.innerHTML = transactions.map((t,i) => {
+    runCredit += Number(t.credit||0)
+    runDebit  += Number(t.debit||0)
+    const net  = runCredit - runDebit
+    const netColor = net >= 0 ? "color:#16a34a" : "color:#dc2626"
+    const crHTML = t.credit  ? `<span style="color:#16a34a;font-weight:bold">₹${Number(t.credit).toFixed(2)}</span>`  : "—"
+    const drHTML = t.debit   ? `<span style="color:#dc2626;font-weight:bold">₹${Number(t.debit).toFixed(2)}</span>`   : "—"
+    return `<tr>
+      <td>${i+1}</td>
+      <td><strong>${t.name}</strong></td>
+      <td>${t.date||"—"}</td>
+      <td>${crHTML}</td>
+      <td>${drHTML}</td>
+      <td style="${netColor};font-weight:bold">₹${net.toFixed(2)}</td>
+      <td>${t.note||"—"}</td>
+      <td><button class="btn-del" onclick="deleteTx(${i})">🗑 Del</button></td>
+    </tr>`
+  }).join("")
+
+  /* Grand total footer row */
+  const grandNet = sumCredit() - sumDebit()
+  const gColor   = grandNet >= 0 ? "#16a34a" : "#dc2626"
+  tfoot.innerHTML = `<tr class="grand-row">
+    <td colspan="3" style="text-align:right;padding-right:16px">Grand Total →</td>
+    <td style="color:#16a34a;font-weight:800">₹${sumCredit().toFixed(2)}</td>
+    <td style="color:#dc2626;font-weight:800">₹${sumDebit().toFixed(2)}</td>
+    <td style="color:${gColor};font-weight:800">₹${grandNet.toFixed(2)}</td>
+    <td colspan="2"></td>
+  </tr>`
+}
+
+function deleteTx(i) {
+  if (!confirm("Delete this transaction?")) return
+  transactions.splice(i,1)
+  saveLocal(); renderTransactions(); refreshDashboard()
+  showToast("🗑️ Transaction deleted")
+}
+
+/* Live calc in transaction form */
+function updateTxCalc() {
+  const c = parseFloat(document.getElementById("txCredit").value) || 0
+  const d = parseFloat(document.getElementById("txDebit").value)  || 0
+  document.getElementById("tx_this_credit").textContent  = "₹ " + c.toFixed(2)
+  document.getElementById("tx_this_debit").textContent   = "₹ " + d.toFixed(2)
+  document.getElementById("tx_total_credit").textContent = "₹ " + sumCredit().toFixed(2)
+  document.getElementById("tx_total_debit").textContent  = "₹ " + sumDebit().toFixed(2)
+  document.getElementById("tx_net").textContent          = "₹ " + netBal().toFixed(2)
+}
+
+/* ════════════════════════════════════════════
+   DASHBOARD REFRESH
+════════════════════════════════════════════ */
+function refreshDashboard() {
+  const paid    = students.filter(s => s.paid)
+  const pending = students.filter(s => !s.paid)
+  const revenue = sumCredit()
+
+  document.getElementById("cardTotalStudents").textContent = students.length
+  document.getElementById("cardPaid").textContent          = paid.length
+  document.getElementById("cardPending").textContent       = pending.length
+  document.getElementById("cardRevenue").textContent       = "₹" + revenue.toFixed(2)
+
+  /* Paid count badge */
+  document.getElementById("paidCountBadge").textContent = paid.length + " paid"
+
+  /* ── Paid Students table ── */
+  const paidBody = document.getElementById("paidDashBody")
+  if (paid.length === 0) {
+    paidBody.innerHTML = `<tr><td colspan="7" class="empty-td">No paid students yet — go to <b>Students</b> tab and click ✔ Mark Paid.</td></tr>`
+  } else {
+    paidBody.innerHTML = paid.map((s,i) => {
+      const cls = COURSE_BADGES[s.course] || "b-blue"
+      return `<tr>
+        <td><strong>${i+1}</strong></td>
+        <td><strong>${s.name}</strong></td>
+        <td>${s.paidDate || currentDateStr()}</td>
+        <td><span class="badge ${cls}">${s.course}</span></td>
+        <td style="color:#16a34a;font-weight:bold">₹${Number(s.fee||0).toFixed(2)}</td>
+        <td>—</td>
+        <td><span class="badge b-green">✅ Paid</span></td>
+      </tr>`
+    }).join("")
+  }
+
+  /* ── All Students overview table ── */
+  const allBody = document.getElementById("dashAllBody")
+  if (students.length === 0) {
+    allBody.innerHTML = `<tr><td colspan="7" class="empty-td">No students added yet.</td></tr>`
+  } else {
+    allBody.innerHTML = students.map((s,i) => {
+      const cls     = COURSE_BADGES[s.course] || "b-blue"
+      const instCls = s.institution === "MIET" ? "badge-miet" : s.institution === "Anna Nagar" ? "badge-annanagar" : "b-blue"
+      const status  = s.paid
+        ? `<span class="badge b-green">✅ Paid</span>`
+        : `<span class="badge b-amber">⏳ Pending</span>`
+      return `<tr>
+        <td>${i+1}</td>
+        <td><strong>${s.name}</strong></td>
+        <td><span class="badge inst-badge ${instCls}">${s.institution||"—"}</span></td>
+        <td><span class="badge ${cls}">${s.course}</span></td>
+        <td>₹${Number(s.fee||0).toFixed(2)}</td>
+        <td>${s.addedDate||"—"}</td>
+        <td>${status}</td>
+      </tr>`
+    }).join("")
+  }
+
+  /* ── Branch summary cards ── */
+  const mietStu  = students.filter(s => s.institution === "MIET")
+  const annaStu  = students.filter(s => s.institution === "Anna Nagar")
+  const mietPaid = mietStu.filter(s => s.paid)
+  const annaPaid = annaStu.filter(s => s.paid)
+  const mietRev  = mietPaid.reduce((t,s) => t + Number(s.fee||0), 0)
+  const annaRev  = annaPaid.reduce((t,s) => t + Number(s.fee||0), 0)
+  document.getElementById("bc_miet_total").textContent   = mietStu.length
+  document.getElementById("bc_miet_paid").textContent    = mietPaid.length
+  document.getElementById("bc_miet_pending").textContent = mietStu.length - mietPaid.length
+  document.getElementById("bc_miet_rev").textContent     = "₹" + mietRev.toFixed(0)
+  document.getElementById("bc_anna_total").textContent   = annaStu.length
+  document.getElementById("bc_anna_paid").textContent    = annaPaid.length
+  document.getElementById("bc_anna_pending").textContent = annaStu.length - annaPaid.length
+  document.getElementById("bc_anna_rev").textContent     = "₹" + annaRev.toFixed(0)
+}
+
+/* ════════════════════════════════════════════
+   REPORTS
+════════════════════════════════════════════ */
+function loadReport() {
+  const paid      = students.filter(s => s.paid)
+  const pending   = students.filter(s => !s.paid)
+  const expected  = students.reduce((s,st) => s + Number(st.fee||0), 0)
+  const collected = paid.reduce((s,st) => s + Number(st.fee||0), 0)
+  const remaining = pending.reduce((s,st) => s + Number(st.fee||0), 0)
+  const expenses  = sumDebit()
+  const net       = collected - expenses
+  const pct       = expected > 0 ? Math.round((collected / expected) * 100) : 0
+
+  // Update cards
+  const s = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v }
+  s("rpt_stu",       students.length)
+  s("rpt_expected",  "₹" + expected.toLocaleString("en-IN"))
+  s("rpt_collected", "₹" + collected.toLocaleString("en-IN"))
+  s("rpt_remaining", "₹" + remaining.toLocaleString("en-IN"))
+  s("rpt_expenses",  "₹" + expenses.toLocaleString("en-IN"))
+  s("rpt_net",       "₹" + net.toLocaleString("en-IN"))
+  s("rpt_pct",       pct + "%")
+  s("rpt_bar_paid_lbl",  "✅ Paid: " + paid.length + " students (₹" + collected.toLocaleString("en-IN") + ")")
+  s("rpt_bar_pend_lbl",  "⏳ Pending: " + pending.length + " students (₹" + remaining.toLocaleString("en-IN") + ")")
+
+  const netEl = document.getElementById("rpt_net")
+  if (netEl) netEl.style.color = net >= 0 ? "#7c3aed" : "#dc2626"
+
+  const barEl = document.getElementById("rpt_bar")
+  if (barEl) barEl.style.width = pct + "%"
+
+  document.getElementById("reportSummary").innerHTML =
+    `Generated: ${new Date().toLocaleString("en-IN")} &nbsp;|&nbsp;
+     Expected: ₹${expected.toLocaleString("en-IN")} &nbsp;|&nbsp;
+     Collected: ₹${collected.toLocaleString("en-IN")} &nbsp;|&nbsp;
+     Remaining: ₹${remaining.toLocaleString("en-IN")} &nbsp;|&nbsp;
+     Net: ₹${net.toLocaleString("en-IN")}`
+
+  // Build table
+  let idx = 1
+  let rows = `<tr>
+    <th>#</th><th>Type</th><th>Name</th><th>Course / Note</th>
+    <th>Date</th><th>Fee (₹)</th><th>Collected (₹)</th><th>Remaining (₹)</th><th>Debit (₹)</th><th>Status</th>
+  </tr>`
+
+  students.forEach(s => {
+    const cls  = COURSE_BADGES[s.course] || "b-blue"
+    const feeAmt = Number(s.fee||0)
+    const rem  = s.paid ? 0 : feeAmt
+    rows += `<tr>
+      <td>${idx++}</td>
+      <td><span class="badge b-blue">🎓 Student</span></td>
+      <td><strong>${s.name}</strong></td>
+      <td><span class="badge ${cls}">${s.course||"—"}</span></td>
+      <td style="font-size:11px">${s.paid ? (s.paidDate||"—") : (s.addedDate||"—")}</td>
+      <td>₹${feeAmt.toFixed(2)}</td>
+      <td>${s.paid ? `<span style="color:#16a34a;font-weight:bold">₹${feeAmt.toFixed(2)}</span>` : `<span style="color:#94a3b8">—</span>`}</td>
+      <td>${rem > 0 ? `<span style="color:#d97706;font-weight:bold">₹${rem.toFixed(2)}</span>` : `<span style="color:#16a34a">✅ —</span>`}</td>
+      <td>—</td>
+      <td>${s.paid ? '<span class="badge b-green">✅ Paid</span>' : '<span class="badge b-amber">⏳ Pending</span>'}</td>
+    </tr>`
+  })
+
+  transactions.forEach(t => {
+    rows += `<tr style="background:#fafafa">
+      <td>${idx++}</td>
+      <td><span class="badge b-purple">💰 Txn</span></td>
+      <td>${t.name}</td>
+      <td style="font-size:11px;color:#64748b">${t.note||"—"}</td>
+      <td style="font-size:11px">${t.date||"—"}</td>
+      <td>—</td>
+      <td>${t.credit ? `<span style="color:#16a34a;font-weight:bold">₹${Number(t.credit).toFixed(2)}</span>` : "—"}</td>
+      <td>—</td>
+      <td>${t.debit ? `<span style="color:#dc2626;font-weight:bold">₹${Number(t.debit).toFixed(2)}</span>` : "—"}</td>
+      <td><span class="badge b-teal">✔ Logged</span></td>
+    </tr>`
+  })
+
+  if (idx === 1) rows += `<tr><td colspan="10" class="empty-td">No data yet.</td></tr>`
+
+  // Grand total footer
+  rows += `<tr style="background:#1e293b;color:#fff;font-weight:800;">
+    <td colspan="5" style="text-align:right;padding-right:14px;color:#fff;">GRAND TOTAL →</td>
+    <td style="color:#60a5fa">₹${expected.toFixed(2)}</td>
+    <td style="color:#4ade80">₹${collected.toFixed(2)}</td>
+    <td style="color:#fbbf24">₹${remaining.toFixed(2)}</td>
+    <td style="color:#f87171">₹${expenses.toFixed(2)}</td>
+    <td style="color:#c4b5fd">Net: ₹${net.toFixed(2)}</td>
+  </tr>`
+
+  document.getElementById("reportTable").innerHTML = rows
+}
+
+/* ════════════════════════════════════════════
+   EXCEL EXPORT / IMPORT
+════════════════════════════════════════════ */
+function buildWorkbook() {
+  const wb   = XLSX.utils.book_new()
+  const paid = students.filter(s => s.paid)
+
+  /* Sheet 1 – Dashboard Summary */
+  const summary = [
+    ["SRI ACADEMY — EDUCATION MANAGEMENT REPORT"],
+    ["Generated on:", new Date().toLocaleString("en-IN")],
+    [],
+    ["Metric","Value"],
+    ["Total Students",    students.length],
+    ["Fee Paid",          paid.length],
+    ["Fee Pending",       students.length - paid.length],
+    ["Total Credit (₹)",  sumCredit()],
+    ["Total Debit (₹)",   sumDebit()],
+    ["Net Balance (₹)",   netBal()]
+  ]
+  const ws0 = XLSX.utils.aoa_to_sheet(summary)
+  ws0["!merges"] = [{s:{r:0,c:0},e:{r:0,c:1}}]
+  ws0["!cols"]   = [{wch:28},{wch:22}]
+  XLSX.utils.book_append_sheet(wb, ws0, "Dashboard")
+
+  /* Sheet 2 – Students */
+  const sData = [["#","Name","Phone","Course","Fee (₹)","Institution","Month","Status","Paid Date"]]
+  students.forEach((s,i) => sData.push([
+    i+1, s.name, s.phone||"", s.course, s.fee||0,
+    s.institution||"", s.month||"",
+    s.paid?"Paid":"Pending", s.paidDate||""
+  ]))
+  if (!students.length) sData.push(["—","No students","","","","","","",""])
+  const ws1 = XLSX.utils.aoa_to_sheet(sData)
+  ws1["!cols"] = [{wch:5},{wch:22},{wch:16},{wch:18},{wch:10},{wch:14},{wch:12},{wch:10},{wch:18}]
+  XLSX.utils.book_append_sheet(wb, ws1, "Students")
+
+  /* Sheet 3 – Transactions */
+  const tData = [["#","Name","Date","Credit (₹)","Debit (₹)","Running Net (₹)","Note"]]
+  let rc=0, rd=0
+  transactions.forEach((t,i) => {
+    rc += Number(t.credit||0); rd += Number(t.debit||0)
+    tData.push([i+1, t.name, t.date||"", t.credit||0, t.debit||0, rc-rd, t.note||""])
+  })
+  if (!transactions.length) tData.push(["—","No transactions","","","","",""])
+  const ws3 = XLSX.utils.aoa_to_sheet(tData)
+  ws3["!cols"] = [{wch:5},{wch:22},{wch:14},{wch:14},{wch:14},{wch:16},{wch:30}]
+  XLSX.utils.book_append_sheet(wb, ws3, "Transactions")
+
+  return wb
+}
+
+function exportExcel() {
+  const wb    = buildWorkbook()
+  const today = new Date().toISOString().slice(0,10)
+  XLSX.writeFile(wb, `SriAcademy_${today}.xlsx`)
+  showToast("📤 Exported to Excel!")
+}
+
+function endOfDay() {
+  if (!confirm("Close the day and export all data to Excel?")) return
+  const wb = buildWorkbook()
+  const ts = new Date().toISOString().slice(0,16).replace("T","_").replace(/:/g,"-")
+  XLSX.writeFile(wb, `SriAcademy_EndOfDay_${ts}.xlsx`)
+  showToast("🔒 End-of-Day export done!")
+}
+
+/* ════════════════════════════════════════════
+   SMART DUAL-SHEET IMPORT (MIET + ANNA NAGAR)
+════════════════════════════════════════════ */
+let _pendingImport = { students: [], transactions: [], sheetPreviews: [] }
+let _activePreviewSheet = 0
+
+function importExcel(event) {
+  const file = event.target.files[0]; if (!file) return
+  const reader = new FileReader()
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result)
+      const wb   = XLSX.read(data, { type:"array" })
+      _pendingImport = { students: [], transactions: [], sheetPreviews: [] }
+
+      wb.SheetNames.forEach(sName => {
+        const ws   = wb.Sheets[sName]
+        const rows = XLSX.utils.sheet_to_json(ws, { defval:"" })
+        if (!rows.length) return
+        const sn = sName.toLowerCase().trim()
+
+        /* ── Detect institution from sheet name ── */
+        let sheetInstitution = ""
+        if (sn.includes("miet"))             sheetInstitution = "MIET"
+        else if (sn.includes("anna") || sn.includes("nagar")) sheetInstitution = "Anna Nagar"
+
+        /* ── Parse as student sheet if sheet name is MIET / Anna Nagar / Students ── */
+        const isStudentSheet = sheetInstitution !== "" || sn.includes("student")
+        if (isStudentSheet) {
+          const imp = rows.map(r => {
+            /* institution: prefer column value, fallback to sheet name */
+            const inst = (r["Institution"]||r["institution"]||r["Branch"]||r["branch"]||sheetInstitution||"").toString().trim()
+            const name = (r["Name"]||r["name"]||r["Student Name"]||r["student name"]||"").toString().trim()
+            if (!name || name === "—" || name.toLowerCase() === "no students") return null
+            return {
+              name,
+              phone:       (r["Phone"]||r["phone"]||r["Mobile"]||r["mobile"]||"").toString().trim(),
+              course:      (r["Course"]||r["course"]||"").toString().trim(),
+              fee:         Number(r["Fee (₹)"]||r["Fee"]||r["fee"]||r["Fees"]||0),
+              institution: inst || "Others",
+              month:       (r["Month"]||r["month"]||"").toString().trim(),
+              paid:        (r["Status"]||"").toString().toLowerCase() === "paid",
+              paidDate:    (r["Paid Date"]||r["paidDate"]||"").toString().trim(),
+              addedDate:   currentDateStr()
+            }
+          }).filter(Boolean)
+          _pendingImport.students.push(...imp)
+          _pendingImport.sheetPreviews.push({
+            name: sName,
+            institution: sheetInstitution || "Student",
+            type: "students",
+            rows: imp
+          })
+        }
+
+        /* ── Parse as transaction sheet ── */
+        if (sn.includes("transaction") || sn.includes("txn")) {
+          const imp = rows.map(r => ({
+            name:   (r["Name"]||r["name"]||"").toString().trim(),
+            date:   (r["Date"]||r["date"]||"").toString().trim(),
+            credit: Number(r["Credit (₹)"]||r["Credit"]||r["credit"]||0),
+            debit:  Number(r["Debit (₹)"]||r["Debit"]||r["debit"]||0),
+            note:   (r["Note"]||r["note"]||"").toString().trim()
+          })).filter(t => t.name && t.name !== "—" && t.name !== "No transactions")
+          _pendingImport.transactions.push(...imp)
+          _pendingImport.sheetPreviews.push({
+            name: sName, institution: "", type: "transactions", rows: imp
+          })
+        }
+      })
+
+      if (_pendingImport.sheetPreviews.length === 0) {
+        showToast("⚠️ No recognisable sheets found. Use sheets named MIET, Anna Nagar, or Students.")
+        event.target.value = ""; return
+      }
+
+      openImportModal()
+    } catch(err) { showToast("❌ Import failed: " + err.message) }
+    event.target.value = ""
+  }
+  reader.readAsArrayBuffer(file)
+}
+
+function openImportModal() {
+  _activePreviewSheet = 0
+  renderImportPreviewTabs()
+  renderImportPreviewTable(0)
+  const total = _pendingImport.students.length
+  const miet  = _pendingImport.students.filter(s => s.institution === "MIET").length
+  const anna  = _pendingImport.students.filter(s => s.institution === "Anna Nagar").length
+  document.getElementById("importSummaryText").innerHTML =
+    `Found <b>${total}</b> students — <b style="color:#0f766e">${miet} MIET</b> &nbsp;|&nbsp; <b style="color:#7c3aed">${anna} Anna Nagar</b> &nbsp;|&nbsp; ${_pendingImport.transactions.length} transactions`
+  document.getElementById("importModal").classList.add("open")
+}
+
+function renderImportPreviewTabs() {
+  const tabs = document.getElementById("importPreviewTabs")
+  tabs.innerHTML = _pendingImport.sheetPreviews.map((s, i) => {
+    const cls = s.institution === "MIET" ? "miet" : s.institution === "Anna Nagar" ? "anna" : ""
+    return `<button class="ipt ${cls} ${i===0?'active':''}" onclick="switchPreviewTab(${i})">${s.name} (${s.rows.length})</button>`
+  }).join("")
+}
+
+function switchPreviewTab(idx) {
+  _activePreviewSheet = idx
+  document.querySelectorAll(".ipt").forEach((b,i) => b.classList.toggle("active", i===idx))
+  renderImportPreviewTable(idx)
+}
+
+function renderImportPreviewTable(idx) {
+  const sheet = _pendingImport.sheetPreviews[idx]
+  if (!sheet) return
+  const tbl = document.getElementById("importPreviewTable")
+  if (sheet.type === "students") {
+    tbl.innerHTML = `<thead><tr>
+      <th>#</th><th>Name</th><th>Phone</th><th>Course</th>
+      <th>Fee (₹)</th><th>Institution</th><th>Month</th><th>Status</th>
+    </tr></thead><tbody>` +
+    sheet.rows.map((s,i) => {
+      const instCls = s.institution === "MIET" ? "badge-miet" : s.institution === "Anna Nagar" ? "badge-annanagar" : ""
+      const stCls   = s.paid ? "b-green" : "b-amber"
+      return `<tr>
+        <td>${i+1}</td>
+        <td><strong>${s.name}</strong></td>
+        <td>${s.phone||"—"}</td>
+        <td>${s.course||"—"}</td>
+        <td>₹${Number(s.fee||0).toFixed(2)}</td>
+        <td><span class="badge ${instCls}">${s.institution}</span></td>
+        <td>${s.month||"—"}</td>
+        <td><span class="badge ${stCls}">${s.paid?"✅ Paid":"⏳ Pending"}</span></td>
+      </tr>`
+    }).join("") + `</tbody>`
+  } else {
+    tbl.innerHTML = `<thead><tr>
+      <th>#</th><th>Name</th><th>Date</th><th>Credit (₹)</th><th>Debit (₹)</th><th>Note</th>
+    </tr></thead><tbody>` +
+    sheet.rows.map((t,i) => `<tr>
+      <td>${i+1}</td><td>${t.name}</td><td>${t.date||"—"}</td>
+      <td style="color:#16a34a">${t.credit?"₹"+Number(t.credit).toFixed(2):"—"}</td>
+      <td style="color:#dc2626">${t.debit?"₹"+Number(t.debit).toFixed(2):"—"}</td>
+      <td>${t.note||"—"}</td>
+    </tr>`).join("") + `</tbody>`
+  }
+}
+
+function closeImportModal() {
+  document.getElementById("importModal").classList.remove("open")
+  _pendingImport = { students: [], transactions: [], sheetPreviews: [] }
+}
+
+function confirmImport() {
+  if (_pendingImport.students.length)     students     = _pendingImport.students
+  if (_pendingImport.transactions.length) transactions = _pendingImport.transactions
+  saveLocal()
+  renderStudents(); renderTransactions(); refreshDashboard(); updateFormCalc()
+  updateBranchTabCounts()
+  closeImportModal()
+  document.getElementById("importStatus").style.display = "inline"
+  setTimeout(() => document.getElementById("importStatus").style.display = "none", 4000)
+  const miet = students.filter(s=>s.institution==="MIET").length
+  const anna = students.filter(s=>s.institution==="Anna Nagar").length
+  showToast("✅ Imported! MIET: " + miet + " | Anna Nagar: " + anna)
+}
+
+
+/* ════════════════════════════════════════════
+   SORT & REFRESH — STUDENTS
+════════════════════════════════════════════ */
+let isSortedAZ = false
+
+function sortStudentsAZ() {
+  students.sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }))
+  isSortedAZ = true
+  saveLocal()
+  renderStudents()
+  refreshDashboard()
+  const btn = document.getElementById("btnSort")
+  const ind = document.getElementById("sortIndicator")
+  btn.classList.add("active")
+  btn.textContent = "✅ Sorted A → Z"
+  ind.classList.add("visible")
+  showToast("🔤 Students sorted A → Z!")
+  setTimeout(() => ind.classList.remove("visible"), 4000)
+}
+
+function refreshStudentTable() {
+  const btn = document.getElementById("btnRefresh")
+  const icon = document.getElementById("refreshIcon")
+  btn.classList.add("spin")
+  icon.style.animation = "spin360 0.5s ease"
+  setTimeout(() => { icon.style.animation = ""; btn.classList.remove("spin") }, 500)
+  renderStudents()
+  refreshDashboard()
+  updateFormCalc()
+  document.getElementById("searchStuBox").value = ""
+  document.querySelectorAll("#studentBody tr").forEach(r => r.style.display = "")
+  showToast("🔄 Student list refreshed!")
+}
+
+/* ════════════════════════════════════════════
+   COURSE TYPEWRITING COMBO
+════════════════════════════════════════════ */
+const ALL_COURSES = [
+  { val: "Tuition",       label: "📚 Tuition" },
+  { val: "Hindi",         label: "🔤 Hindi" },
+  { val: "Tuition/Hindi", label: "📖 Tuition / Hindi" },
+  { val: "Computer",      label: "💻 Computer" },
+  { val: "AutoCAD",       label: "📐 AutoCAD" },
+  { val: "Typewriting",   label: "⌨️ Typewriting" },
+  { val: "Others",        label: "➕ Others" }
+]
+
+function openCourseDropdown() {
+  filterCourseDropdown()
+  document.getElementById("courseDropdown").classList.add("open")
+}
+
+function closeCourseDropdown() {
+  setTimeout(() => document.getElementById("courseDropdown").classList.remove("open"), 180)
+}
+
+function selectCourse(val, label) {
+  document.getElementById("stuCourse").value = val
+  document.getElementById("stuCourseInput").value = label
+  document.getElementById("courseDropdown").classList.remove("open")
+  updateFormCalc()
+}
+
+function filterCourseDropdown() {
+  const q = document.getElementById("stuCourseInput").value.toLowerCase().replace(/[^a-z0-9]/g,"")
+  document.getElementById("stuCourse").value = ""
+  const dd = document.getElementById("courseDropdown")
+  const opts = ALL_COURSES.filter(c =>
+    c.val.toLowerCase().replace(/[^a-z0-9]/g,"").includes(q) ||
+    c.label.toLowerCase().replace(/[^a-z0-9]/g,"").includes(q)
+  )
+  if (opts.length === 0) {
+    dd.innerHTML = `<div class="course-option no-match">No matching course</div>`
+  } else {
+    dd.innerHTML = opts.map(c =>
+      `<div class="course-option" data-value="${c.val}" onmousedown="selectCourse('${c.val}','${c.label}')">${c.label}</div>`
+    ).join("")
+  }
+  dd.classList.add("open")
+  updateFormCalc()
+}
+
+let _courseNavIdx = -1
+function courseKeyNav(e) {
+  const opts = document.querySelectorAll("#courseDropdown .course-option:not(.no-match)")
+  if (e.key === "ArrowDown") {
+    _courseNavIdx = Math.min(_courseNavIdx + 1, opts.length - 1)
+    opts.forEach((o,i) => o.style.background = i === _courseNavIdx ? "#eff6ff" : "")
+    e.preventDefault()
+  } else if (e.key === "ArrowUp") {
+    _courseNavIdx = Math.max(_courseNavIdx - 1, 0)
+    opts.forEach((o,i) => o.style.background = i === _courseNavIdx ? "#eff6ff" : "")
+    e.preventDefault()
+  } else if (e.key === "Enter" && _courseNavIdx >= 0 && opts[_courseNavIdx]) {
+    opts[_courseNavIdx].dispatchEvent(new MouseEvent("mousedown"))
+    _courseNavIdx = -1
+  } else if (e.key === "Escape") {
+    document.getElementById("courseDropdown").classList.remove("open")
+  }
+}
+
+
+/* ════════════════════════════════════════════
+   BRANCH FILTER
+════════════════════════════════════════════ */
+let _activeBranch = "all"
+
+function setBranchFilter(branch) {
+  _activeBranch = branch
+  document.querySelectorAll(".branch-tab").forEach(b => {
+    b.classList.toggle("active", b.dataset.branch === branch)
+  })
+  renderStudents()
+}
+
+function updateBranchTabCounts() {
+  const miet   = students.filter(s => s.institution === "MIET").length
+  const anna   = students.filter(s => s.institution === "Anna Nagar").length
+  const others = students.filter(s => s.institution !== "MIET" && s.institution !== "Anna Nagar").length
+  const el_all    = document.getElementById("tc_all")
+  const el_miet   = document.getElementById("tc_miet")
+  const el_anna   = document.getElementById("tc_anna")
+  const el_others = document.getElementById("tc_others")
+  if (el_all)    el_all.textContent    = students.length
+  if (el_miet)   el_miet.textContent   = miet
+  if (el_anna)   el_anna.textContent   = anna
+  if (el_others) el_others.textContent = others
+}
+
+/* ════════════════════════════════════════════
+   EDIT STUDENT MODAL
+════════════════════════════════════════════ */
+let _editStudentIndex = -1
+
+function openEditModal() {
+  _editStudentIndex = -1
+  document.getElementById("editSearchInput").value = ""
+  document.getElementById("editSearchResults").style.display = "none"
+  document.getElementById("editSearchResults").innerHTML = ""
+  document.getElementById("editSelectedLabel").style.display = "none"
+  document.getElementById("editFormFields").classList.remove("visible")
+  document.getElementById("btnSaveEdit").style.display = "none"
+  document.getElementById("editStudentModal").classList.add("open")
+  setTimeout(() => document.getElementById("editSearchInput").focus(), 100)
+}
+
+function openEditModalForStudent(idx) {
+  openEditModal()
+  /* Pre-fill search with the student's name and load them directly */
+  const s = students[idx]
+  if (!s) return
+  document.getElementById("editSearchInput").value = s.name
+  loadEditFields(idx)
+}
+
+function closeEditModal() {
+  document.getElementById("editStudentModal").classList.remove("open")
+  _editStudentIndex = -1
+}
+
+function searchStudentsForEdit() {
+  const q = document.getElementById("editSearchInput").value.trim().toLowerCase()
+  const resultsEl = document.getElementById("editSearchResults")
+
+  if (!q) {
+    resultsEl.style.display = "none"
+    resultsEl.innerHTML = ""
+    return
+  }
+
+  const matches = students
+    .map((s, i) => ({ s, i }))
+    .filter(({ s }) =>
+      s.name.toLowerCase().includes(q) ||
+      (s.phone && s.phone.toLowerCase().includes(q)) ||
+      (s.course && s.course.toLowerCase().includes(q)) ||
+      (s.institution && s.institution.toLowerCase().includes(q))
+    )
+
+  resultsEl.style.display = "block"
+  if (matches.length === 0) {
+    resultsEl.innerHTML = `<div class="no-results-msg">No students found matching "<b>${q}</b>"</div>`
+  } else {
+    resultsEl.innerHTML = matches.map(({ s, i }) => {
+      const instColor = s.institution === "MIET" ? "#0f766e" : s.institution === "Anna Nagar" ? "#7c3aed" : "#2563eb"
+      return `<div class="edit-search-result-item" onclick="loadEditFields(${i})">
+        <span class="edit-result-name">${s.name}</span>
+        <span class="edit-result-meta" style="color:${instColor}">${s.institution || "—"}</span>
+        <span class="edit-result-meta">${s.course || "—"}</span>
+        <span class="edit-result-meta">₹${s.fee || 0}</span>
+        <span class="edit-result-meta">${s.month || "—"}</span>
+      </div>`
+    }).join("")
+  }
+}
+
+function loadEditFields(idx) {
+  const s = students[idx]
+  if (!s) return
+  _editStudentIndex = idx
+
+  /* Hide search results, show selected label */
+  document.getElementById("editSearchResults").style.display = "none"
+  const selLabel = document.getElementById("editSelectedLabel")
+  selLabel.style.display = "flex"
+  document.getElementById("editSelectedName").textContent = s.name + "  ·  " + (s.institution || "") + "  ·  " + (s.course || "")
+
+  /* Fill form fields */
+  document.getElementById("editStuName").value = s.name || ""
+  document.getElementById("editStuPhone").value = s.phone || ""
+  document.getElementById("editStuFee").value = s.fee || ""
+
+  /* Course combo */
+  const courseLabel = ALL_COURSES.find(c => c.val === s.course)
+  document.getElementById("editStuCourse").value = s.course || ""
+  document.getElementById("editStuCourseInput").value = courseLabel ? courseLabel.label : (s.course || "")
+
+  /* Institution */
+  const instSel = document.getElementById("editStuInstitution")
+  for (let o of instSel.options) o.selected = (o.value === s.institution)
+
+  /* Month */
+  const monthSel = document.getElementById("editStuMonth")
+  for (let o of monthSel.options) o.selected = (o.value === s.month)
+
+  /* Paid status */
+  document.getElementById("editStuPaid").value = s.paid ? "paid" : "pending"
+
+  /* Show fields and save button */
+  document.getElementById("editFormFields").classList.add("visible")
+  document.getElementById("btnSaveEdit").style.display = "inline-flex"
+}
+
+function saveEditStudent() {
+  if (_editStudentIndex < 0) { showToast("⚠️ No student selected!"); return }
+
+  const name = document.getElementById("editStuName").value.trim()
+  if (!name) { showToast("⚠️ Name cannot be empty!"); return }
+
+  const s = students[_editStudentIndex]
+  const wasPaid = s.paid
+  const isPaid  = document.getElementById("editStuPaid").value === "paid"
+
+  s.name        = name
+  s.phone       = document.getElementById("editStuPhone").value.trim()
+  s.course      = document.getElementById("editStuCourse").value || document.getElementById("editStuCourseInput").value.trim()
+  s.fee         = parseFloat(document.getElementById("editStuFee").value) || 0
+  s.institution = document.getElementById("editStuInstitution").value
+  s.month       = document.getElementById("editStuMonth").value
+  s.paid        = isPaid
+
+  /* If newly marked paid, set paid date and auto-log transaction */
+  if (!wasPaid && isPaid) {
+    s.paidDate = currentDateStr()
+    transactions.push({
+      name:   s.name,
+      date:   new Date().toISOString().slice(0,10),
+      credit: s.fee,
+      debit:  0,
+      note:   "Fee paid (edited) — " + s.course
+    })
+  }
+
+  saveLocal()
+  renderStudents(); renderTransactions(); refreshDashboard(); updateFormCalc()
+  updateBranchTabCounts()
+  closeEditModal()
+  showToast("✅ " + name + "'s details updated!")
+}
+
+/* ── Edit modal course combo helpers ── */
+function openEditCourseDropdown() {
+  filterEditCourseDropdown()
+  document.getElementById("editCourseDropdown").classList.add("open")
+}
+function closeEditCourseDropdown() {
+  setTimeout(() => document.getElementById("editCourseDropdown").classList.remove("open"), 180)
+}
+function selectEditCourse(val, label) {
+  document.getElementById("editStuCourse").value = val
+  document.getElementById("editStuCourseInput").value = label
+  document.getElementById("editCourseDropdown").classList.remove("open")
+}
+function filterEditCourseDropdown() {
+  const q = document.getElementById("editStuCourseInput").value.toLowerCase().replace(/[^a-z0-9]/g,"")
+  document.getElementById("editStuCourse").value = ""
+  const dd = document.getElementById("editCourseDropdown")
+  const opts = ALL_COURSES.filter(c =>
+    c.val.toLowerCase().replace(/[^a-z0-9]/g,"").includes(q) ||
+    c.label.toLowerCase().replace(/[^a-z0-9]/g,"").includes(q)
+  )
+  dd.innerHTML = opts.length === 0
+    ? `<div class="course-option no-match">No matching course</div>`
+    : opts.map(c =>
+        `<div class="course-option" data-value="${c.val}" onmousedown="selectEditCourse('${c.val}','${c.label}')">${c.label}</div>`
+      ).join("")
+  dd.classList.add("open")
+}
+let _editCourseNavIdx = -1
+function editCourseKeyNav(e) {
+  const opts = document.querySelectorAll("#editCourseDropdown .course-option:not(.no-match)")
+  if (e.key === "ArrowDown") {
+    _editCourseNavIdx = Math.min(_editCourseNavIdx + 1, opts.length - 1)
+    opts.forEach((o,i) => o.style.background = i === _editCourseNavIdx ? "#eff6ff" : "")
+    e.preventDefault()
+  } else if (e.key === "ArrowUp") {
+    _editCourseNavIdx = Math.max(_editCourseNavIdx - 1, 0)
+    opts.forEach((o,i) => o.style.background = i === _editCourseNavIdx ? "#eff6ff" : "")
+    e.preventDefault()
+  } else if (e.key === "Enter" && _editCourseNavIdx >= 0 && opts[_editCourseNavIdx]) {
+    opts[_editCourseNavIdx].dispatchEvent(new MouseEvent("mousedown"))
+    _editCourseNavIdx = -1
+  } else if (e.key === "Escape") {
+    document.getElementById("editCourseDropdown").classList.remove("open")
+  }
+}
+
+/* Close edit modal on backdrop click */
+document.getElementById("editStudentModal").addEventListener("click", function(e) {
+  if (e.target === this) closeEditModal()
+})
+
+
+renderStudents()
+renderTransactions()
+refreshDashboard()
+updateFormCalc()
+updateBranchTabCounts()
+
+
+/* ================= SHARE + BACKUP SYSTEM ================= */
+
+function exportBackup() {
+  const data = { students, transactions }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+  const a = document.createElement("a")
+  a.href = URL.createObjectURL(blob)
+  a.download = "Sri_Academy_Backup.json"
+  a.click()
+  showToast("📦 Backup downloaded!")
+}
+
+function importBackup(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = function(e) {
+    const data = JSON.parse(e.target.result)
+    students = data.students || []
+    transactions = data.transactions || []
+    saveLocal()
+    renderStudents()
+    renderTransactions()
+    refreshDashboard()
+    showToast("✅ Backup restored!")
+  }
+  reader.readAsText(file)
+}
+
+function shareFullSystem() {
+  const data = { students, transactions }
+
+  let cleanHTML = document.documentElement.outerHTML
+
+  const injectData = `<script>
+  localStorage.setItem("sa_students", JSON.stringify(${JSON.stringify(data.students)}));
+  localStorage.setItem("sa_transactions", JSON.stringify(${JSON.stringify(data.transactions)}));
+  <\/script>`
+
+  cleanHTML = cleanHTML.replace("<script>
+  localStorage.setItem("sa_students", JSON.stringify([{"name":"Vasinya","phone":"9345676447","course":"Computer","fee":1000,"institution":"MIET","month":"March","paid":false,"paidDate":"","addedDate":"27 March 2026"},{"name":"Vasanth","phone":"9944197989","course":"Tuition","fee":500,"institution":"MIET","month":"March","paid":false,"paidDate":"","addedDate":"27 March 2026"},{"name":"Jayasree","phone":"7540014923","course":"Hindi","fee":700,"institution":"MIET","month":"May","paid":false,"paidDate":"","addedDate":"27 March 2026"},{"name":"Jayavarshan","phone":"9524514923","course":"Tuition","fee":800,"institution":"MIET","month":"May","paid":false,"paidDate":"","addedDate":"27 March 2026"},{"name":"Dhanya Sree","phone":"8778767671","course":"Tuition","fee":500,"institution":"MIET","month":"April","paid":false,"paidDate":"","addedDate":"27 March 2026"},{"name":"Sai Sree","phone":"9524509661","course":"Tuition/Hindi","fee":1000,"institution":"MIET","month":"April","paid":false,"paidDate":"","addedDate":"27 March 2026"},{"name":"Vimal Kumar","phone":"9655239579","course":"Hindi","fee":700,"institution":"MIET","month":"April","paid":false,"paidDate":"","addedDate":"27 March 2026"},{"name":"Abishek","phone":"7639717373","course":"Hindi","fee":900,"institution":"MIET","month":"April","paid":false,"paidDate":"","addedDate":"27 March 2026"},{"name":"Suhashini","phone":"9942396759","course":"Computer","fee":1000,"institution":"MIET","month":"April","paid":false,"paidDate":"","addedDate":"27 March 2026"},{"name":"Mohamed Farhan","phone":"8925682861","course":"Tuition/Hindi","fee":2000,"institution":"MIET","month":"April","paid":false,"paidDate":"","addedDate":"27 March 2026"}]));
+  localStorage.setItem("sa_transactions", JSON.stringify([{"name":"Vasinya","date":"2026-03-27","credit":1000,"debit":0,"note":"Good"}]));
+  </script></body>", injectData + "</body>")
+
+  const blob = new Blob([cleanHTML], { type: "text/html" })
+  const a = document.createElement("a")
+  a.href = URL.createObjectURL(blob)
+  a.download = "Sri_Academy_FULL_Shared.html"
+  a.click()
+
+  showToast("📤 Full system shared successfully!")
+}
+
+</script>
+
+
+</body></html>
